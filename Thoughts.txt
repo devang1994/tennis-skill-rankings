@@ -1,0 +1,3 @@
+Probably some hybrid Gibbs sampling then, think about initialization.
+What if our distributions are continuous? Does that affect Gibbs sampling?
+What if our distributions are discrete but completely nonparametric? Could we can multi-dimensional insights into a player's skill level?
