@@ -9,7 +9,7 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="1741.0428"
+   width="1695.0138"
    height="997.35291"
    id="svg2"
    version="1.1"
@@ -81,9 +81,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.7"
-     inkscape:cx="838.13859"
-     inkscape:cy="406.36652"
+     inkscape:zoom="0.35"
+     inkscape:cx="779.28985"
+     inkscape:cy="416.6769"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -114,7 +114,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(770.53644,422.87915)">
+     transform="translate(747.67929,422.87915)">
     <g
        id="g3759"
        transform="translate(-69.881057,59.376883)">
@@ -474,44 +474,44 @@
        sodipodi:linespacing="125%"
        id="text3755-2-1-3-5-2-9"
        y="-348.14108"
-       x="-343.37238"
+       x="-320.51523"
        style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:end;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
        xml:space="preserve"><tspan
          y="-348.14108"
-         x="-343.37238"
+         x="-320.51523"
          id="tspan3757-5-6-3-5-8-7"
          sodipodi:role="line">Team 1, Player 1</tspan></text>
     <text
        sodipodi:linespacing="125%"
        id="text3755-2-1-3-5-2-9-5"
        y="78.14328"
-       x="-343.37238"
+       x="-320.51523"
        style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:end;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
        xml:space="preserve"><tspan
          y="78.14328"
-         x="-343.37238"
+         x="-320.51523"
          id="tspan3757-5-6-3-5-8-7-1"
          sodipodi:role="line">Team 1, Player M</tspan></text>
     <text
        sodipodi:linespacing="125%"
        id="text3755-2-1-3-5-2-9-6"
        y="-348.14108"
-       x="971.84625"
-       style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:end;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
+       x="531.84625"
+       style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
        xml:space="preserve"><tspan
          y="-348.14108"
-         x="971.84625"
+         x="531.84625"
          id="tspan3757-5-6-3-5-8-7-6"
          sodipodi:role="line">Team 2, Player 1</tspan></text>
     <text
        sodipodi:linespacing="125%"
        id="text3755-2-1-3-5-2-9-5-6"
        y="78.143257"
-       x="971.84625"
-       style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:end;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
+       x="531.84625"
+       style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
        xml:space="preserve"><tspan
          y="78.143257"
-         x="971.84625"
+         x="531.84625"
          id="tspan3757-5-6-3-5-8-7-1-4"
          sodipodi:role="line">Team 2, Player N</tspan></text>
   </g>
