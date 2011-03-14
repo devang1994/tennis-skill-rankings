@@ -9,7 +9,7 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="3311.0073"
+   width="2534.427"
    height="1158.9386"
    id="svg2"
    version="1.1"
@@ -152,10 +152,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.35"
-     inkscape:cx="1144.9385"
-     inkscape:cy="379.50492"
+     inkscape:cx="1666.238"
+     inkscape:cy="456.64778"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer2"
      showgrid="false"
      inkscape:window-width="1538"
      inkscape:window-height="1178"
@@ -176,7 +176,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -184,7 +184,8 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(1964.8662,391.65543)">
+     transform="translate(1964.8662,391.65543)"
+     sodipodi:insensitive="true">
     <g
        transform="translate(-459.14694,-546.11063)"
        id="g3759-5">
@@ -520,17 +521,6 @@
          style="fill:none;stroke:#000000;stroke-width:2.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:10, 10;stroke-dashoffset:0"
          sodipodi:type="arc" />
     </g>
-    <text
-       sodipodi:linespacing="125%"
-       id="text3755-2-1-3-5-2-9-7"
-       y="-302.42682"
-       x="593.47729"
-       style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
-       xml:space="preserve"><tspan
-         y="-302.42682"
-         x="593.47729"
-         id="tspan3757-5-6-3-5-8-7-9"
-         sodipodi:role="line">Player 1</tspan></text>
     <g
        transform="translate(217.96113,-299.22897)"
        id="g3759-5-4-17-1-2-4-5">
@@ -556,17 +546,6 @@
          sodipodi:type="arc" />
     </g>
     <text
-       sodipodi:linespacing="125%"
-       id="text3755-2-1-3-5-2-9-3-5"
-       y="-28.141117"
-       x="593.47729"
-       style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
-       xml:space="preserve"><tspan
-         y="-28.141117"
-         x="593.47729"
-         id="tspan3757-5-6-3-5-8-7-16-67"
-         sodipodi:role="line">Player 12</tspan></text>
-    <text
        xml:space="preserve"
        style="font-size:72px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:Serif;-inkscape-font-specification:Serif Bold"
        x="243.42575"
@@ -578,17 +557,6 @@
          id="tspan4244-1-3-2-1"
          x="243.42575"
          y="-387.8208">…</tspan></text>
-    <text
-       sodipodi:linespacing="125%"
-       id="text3755-2-1-3-5-2-9-4-9"
-       y="164.49551"
-       x="591.32654"
-       style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
-       xml:space="preserve"><tspan
-         y="164.49551"
-         x="591.32654"
-         id="tspan3757-5-6-3-5-8-7-0-4"
-         sodipodi:role="line">Player 1</tspan></text>
     <g
        transform="translate(215.81033,167.69336)"
        id="g3759-5-4-17-1-2-4-3-3">
@@ -613,17 +581,6 @@
          style="fill:none;stroke:#000000;stroke-width:2.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:10, 10;stroke-dashoffset:0"
          sodipodi:type="arc" />
     </g>
-    <text
-       sodipodi:linespacing="125%"
-       id="text3755-2-1-3-5-2-9-3-9-6"
-       y="438.78122"
-       x="591.32654"
-       style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
-       xml:space="preserve"><tspan
-         y="438.78122"
-         x="591.32654"
-         id="tspan3757-5-6-3-5-8-7-16-6-9"
-         sodipodi:role="line">Player 12</tspan></text>
     <g
        transform="translate(218.66743,-106.59235)"
        id="g3759-5-4-17-1-6-5">
@@ -783,58 +740,6 @@
            x="-1568.792"
            y="297.38242">Attacking Team</tspan></text>
     </g>
-    <g
-       id="g6412"
-       transform="translate(-553.5636,0)">
-      <text
-         xml:space="preserve"
-         style="font-size:300px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif"
-         x="1434.1382"
-         y="-104.3487"
-         id="text6255-6-6"
-         sodipodi:linespacing="125%"><tspan
-           sodipodi:role="line"
-           id="tspan6257-5-4"
-           x="1434.1382"
-           y="-104.3487">}</tspan></text>
-      <text
-         sodipodi:linespacing="125%"
-         id="text3755-2-1-3-5-2-9-4-3-2-8"
-         y="-163.24715"
-         x="1504.3961"
-         style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
-         xml:space="preserve"><tspan
-           y="-163.24715"
-           x="1504.3961"
-           id="tspan3757-5-6-3-5-8-7-0-3-3-0"
-           sodipodi:role="line">Attacking Team</tspan></text>
-    </g>
-    <g
-       id="g6412-4"
-       transform="translate(-553.56358,452.54834)">
-      <text
-         xml:space="preserve"
-         style="font-size:300px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif"
-         x="1434.1382"
-         y="-104.3487"
-         id="text6255-6-6-6"
-         sodipodi:linespacing="125%"><tspan
-           sodipodi:role="line"
-           id="tspan6257-5-4-0"
-           x="1434.1382"
-           y="-104.3487">}</tspan></text>
-      <text
-         sodipodi:linespacing="125%"
-         id="text3755-2-1-3-5-2-9-4-3-2-8-7"
-         y="-163.24715"
-         x="1504.3961"
-         style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
-         xml:space="preserve"><tspan
-           y="-163.24715"
-           x="1504.3961"
-           id="tspan3757-5-6-3-5-8-7-0-3-3-0-6"
-           sodipodi:role="line">Defending Team</tspan></text>
-    </g>
     <text
        xml:space="preserve"
        style="font-size:72px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:Serif;-inkscape-font-specification:Serif Bold"
@@ -897,5 +802,113 @@
        inkscape:connector-curvature="0"
        transform="translate(-1964.8662,-391.65543)"
        sodipodi:nodetypes="cc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Superfluous"
+     sodipodi:insensitive="true"
+     style="display:none"
+     transform="translate(1.09375e-5,-3.9746094e-6)">
+    <text
+       transform="translate(1964.8662,391.65543)"
+       sodipodi:linespacing="125%"
+       id="text3755-2-1-3-5-2-9-7"
+       y="-302.42682"
+       x="593.47729"
+       style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
+       xml:space="preserve"><tspan
+         y="-302.42682"
+         x="593.47729"
+         id="tspan3757-5-6-3-5-8-7-9"
+         sodipodi:role="line">Player 1</tspan></text>
+    <text
+       transform="translate(1964.8662,391.65543)"
+       sodipodi:linespacing="125%"
+       id="text3755-2-1-3-5-2-9-3-5"
+       y="-28.141117"
+       x="593.47729"
+       style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
+       xml:space="preserve"><tspan
+         y="-28.141117"
+         x="593.47729"
+         id="tspan3757-5-6-3-5-8-7-16-67"
+         sodipodi:role="line">Player 12</tspan></text>
+    <text
+       transform="translate(1964.8662,391.65543)"
+       sodipodi:linespacing="125%"
+       id="text3755-2-1-3-5-2-9-4-9"
+       y="164.49551"
+       x="591.32654"
+       style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
+       xml:space="preserve"><tspan
+         y="164.49551"
+         x="591.32654"
+         id="tspan3757-5-6-3-5-8-7-0-4"
+         sodipodi:role="line">Player 1</tspan></text>
+    <text
+       transform="translate(1964.8662,391.65543)"
+       sodipodi:linespacing="125%"
+       id="text3755-2-1-3-5-2-9-3-9-6"
+       y="438.78122"
+       x="591.32654"
+       style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
+       xml:space="preserve"><tspan
+         y="438.78122"
+         x="591.32654"
+         id="tspan3757-5-6-3-5-8-7-16-6-9"
+         sodipodi:role="line">Player 12</tspan></text>
+    <g
+       id="g6412"
+       transform="translate(1411.3026,391.65543)">
+      <text
+         xml:space="preserve"
+         style="font-size:300px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif"
+         x="1434.1382"
+         y="-104.3487"
+         id="text6255-6-6"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan6257-5-4"
+           x="1434.1382"
+           y="-104.3487">}</tspan></text>
+      <text
+         sodipodi:linespacing="125%"
+         id="text3755-2-1-3-5-2-9-4-3-2-8"
+         y="-163.24715"
+         x="1504.3961"
+         style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
+         xml:space="preserve"><tspan
+           y="-163.24715"
+           x="1504.3961"
+           id="tspan3757-5-6-3-5-8-7-0-3-3-0"
+           sodipodi:role="line">Attacking Team</tspan></text>
+    </g>
+    <g
+       id="g6412-4"
+       transform="translate(1411.3026,844.20377)">
+      <text
+         xml:space="preserve"
+         style="font-size:300px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif"
+         x="1434.1382"
+         y="-104.3487"
+         id="text6255-6-6-6"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan6257-5-4-0"
+           x="1434.1382"
+           y="-104.3487">}</tspan></text>
+      <text
+         sodipodi:linespacing="125%"
+         id="text3755-2-1-3-5-2-9-4-3-2-8-7"
+         y="-163.24715"
+         x="1504.3961"
+         style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
+         xml:space="preserve"><tspan
+           y="-163.24715"
+           x="1504.3961"
+           id="tspan3757-5-6-3-5-8-7-0-3-3-0-6"
+           sodipodi:role="line">Defending Team</tspan></text>
+    </g>
   </g>
 </svg>
