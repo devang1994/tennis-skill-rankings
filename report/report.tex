@@ -1,14 +1,32 @@
-\documentclass[9pt,twocolumn]{article}
+\documentclass[10pt,twocolumn]{article}
 
 \usepackage[small,compact]{titlesec} %http://gurmeet.net/computer-science/latex-tips-n-tricks-for-conference-papers/
 \usepackage{microtype}
+\usepackage{graphicx}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Margins
 \setlength{\columnsep}{0.25in}
 \usepackage[top=0.8in,bottom=0.8in,left=0.5in,right=0.5in]{geometry}
 
-\title{\LaTeX}
-\date{}
+
+
+
+%==================================================================================================
+%   MATH MACROS
+\newcommand{\mabs}[1]{\ensuremath{  \left| #1 \right|  }}
+
+\newcommand{\prb}[1]{\ensuremath{  \mathrm{Pr}\left\{ #1 \right\}  }}
+\newcommand{\tridefeq}{\ensuremath{  \,{\overset{\triangle}{=}}\;   }}
+
+\newcommand{\normrv}[2]{\ensuremath{          \mathcal{N}\left(#1,#2\right)    }}
+
+\newcommand{\ind}[1]{\ensuremath{  \pmb{\mathtt{1}}\left\{ #1 \right\}  }}
+
+\newcommand{\mtr}{\ensuremath{  {\operatorname{T}}}  }
+\newcommand{\mdd}{\ensuremath{   \operatorname{d}\!  }} 
+
+%==================================================================================================
+
 \begin{document}
 
 
@@ -17,8 +35,9 @@
 
  \medskip
 
- \centerline{\bf Leland Chen, Joseph Huang, Ryan Thompson}
-      %% Author name(s)
+ \centerline{\bf Leland Chen, Joseph Huang, Ryan Thompson}      %% Author name(s)
+ \centerline{\today}
+
  \bigskip
  ]
 
@@ -28,11 +47,41 @@
 
 \section{Related Work}
 
-References
+References...
+
+Basketball brings two key challenges to the field of Bayesian Skill estimation.
+\begin{itemize}
+\item Results are not binary Win/Lose outcomes.
+\item Results are influenced by the skill differential of more than two players.
+\end{itemize}
 
 \section{Method}
+\subsection{Traditional Networks}
 
-Details
+We model the result of each possession as an independent and identically distributed random variable, \emph{Result}.
+An NBA roster has 12 players, but only five of them are on the court for a given team during any single posession.
+
+To reduce noise, we ignore ``garbage time'' posessions. To simplify the model we ignore possessions that end in a time-out.
+
+We begin with a very basic model that follows traditional ``skill ranking'' in the sense that each player has an unobserved (or parameterized) skill that has some distribution, and using inference (or parameter estimation) we can determine the value of each player's skill.
+In this network, we decided each player would have a hidden offsensive and defensive skill value, shared across possessions:
+\includegraphics[width=0.95\linewidth]{figures/network}
+These skills would contribute deterministically in some way to an ``effective'' total skill differential between the two teams, and then the \emph{Result} variable would be one of four outcomes:
+\begin{itemize}
+\item $R=0$ Offensive Team Scores nothing, change of possession (e.g. turnover, defensive rebound, etc.)
+\item $R=1$ Offensive Team Scores 1 point
+\item $R=2$ Offensive Team Scores 2 points
+\item $R=3$ Offensive Team Scores 3 points
+\end{itemize}
+
+The \emph{On Court} random variable ``multiplexes'' between those players that are on the court and those that are not.
+
+\subsection{Issues}
+These traditional models~\cite{herbrich2007trueskilltm} have difficulty capturing the proper causalities when Results can have multinomial-valued outcomes.
+For example, regardless of the parameterization of the \emph{Results} CPD, both $\prb{ R = 2}$ and $\prb{R= 3}$ would depend on the same skills of the same players.
+The relative distribution of outcomes $\prb{R = 2}$ vs. $\prb{R = 3}$ would be shared across all ``units'' (i.e. all combinations of \emph{On Court} assignments).
+In reality, however, a team that scores Results  
+
 
 \section{Implemention}
 
@@ -49,5 +98,13 @@ Details
 \section{Conclusions}
 
 Done
+
+
+\section{References}
+%\small{
+\bibliographystyle{ieeetran}
+\bibliography{ieeeabrv,references/references}
+%\bibliography{references/references}
+%}
 
 \end{document}

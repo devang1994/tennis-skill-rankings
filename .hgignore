@@ -1,1 +1,1 @@
-relre:^report/report.(aux|log|synctex.gz)
+relre:^report/report.(aux|log|synctex.gz|bbl|blg)
