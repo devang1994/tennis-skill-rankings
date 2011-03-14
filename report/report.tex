@@ -47,7 +47,7 @@
 
 \section{Related Work}
 
-References...
+Let's talk about~\cite{herbrich2007trueskilltm}~and~\cite{coulom2008whole} and then just follow the citations that those guys make to introduce the general challenges and state-of-the art.
 
 Basketball brings two key challenges to the field of Bayesian Skill estimation.
 \begin{itemize}
@@ -80,8 +80,17 @@ The \emph{On Court} random variable ``multiplexes'' between those players that a
 These traditional models~\cite{herbrich2007trueskilltm} have difficulty capturing the proper causalities when Results can have multinomial-valued outcomes.
 For example, regardless of the parameterization of the \emph{Results} CPD, both $\prb{ R = 2}$ and $\prb{R= 3}$ would depend on the same skills of the same players.
 The relative distribution of outcomes $\prb{R = 2}$ vs. $\prb{R = 3}$ would be shared across all ``units'' (i.e. all combinations of \emph{On Court} assignments).
-In reality, however, a team that scores Results  
 
+In reality, a team that scores $R=3$ half the time and $R=1$ half the time is just as good as a team that scores $R=2$ all the time.
+However, any traditional Win/Lose model will unfairly penalize the likelihood of one of these teams over the other and leads to under-fitting.
+
+Secondly, there is a lot of value in being able to compare with the state-of-the-art in the Win/Lose based Bayesian Skill Ranking literature.
+Specifically, there is common debate over logistic vs. Gaussian skill/performance distributions and we wish to be sensitive to that conversation in this project.
+Having a multinomial outcome makes it difficult to directly compare logistic vs. Gaussian in the standard skill/performance framework because there is no consensus in the literature about how to extend these models just to support ties~\cite{hunter2004mm}, let alone general multinomial outcomes.
+
+\subsection{Proposed Network}
+
+\includegraphics[width=0.95\linewidth]{figures/newnetwork}
 
 \section{Implemention}
 
