@@ -45,9 +45,15 @@
  \bigskip
  ]
 
+% ==============================================================================
+% ==============================================================================
+
 \section{Introduction}
 
   Template
+
+% ==============================================================================
+% ==============================================================================
 
 \section{Related Work}
 
@@ -58,6 +64,10 @@ Basketball brings two key challenges to the field of Bayesian Skill estimation.
 \item Results are not binary Win/Lose outcomes.
 \item Results are influenced by the skill differential of more than two players.
 \end{itemize}
+
+
+% ==============================================================================
+% ==============================================================================
 
 \section{Method}
 \subsection{Traditional Networks}
@@ -82,6 +92,7 @@ These skills would contribute deterministically in some way to an ``effective'' 
 
 The \emph{On Court} random variable ``multiplexes'' between those players that are on the court and those that are not.
 
+% ==============================================================================
 \subsection{Issues}
 \label{sec:badnetwork}
 These traditional models~\cite{herbrich2007trueskilltm} have difficulty capturing the proper causalities when Results can have multinomial-valued outcomes.
@@ -97,6 +108,7 @@ Secondly, there is a lot of value in being able to compare with the state-of-the
 Specifically, there is common debate over logistic vs. Gaussian skill/performance distributions and we wish to be sensitive to that conversation in this project.
 Having a multinomial outcome makes it difficult to directly compare logistic vs. Gaussian in the standard skill/performance framework because there is no consensus in the literature about how to extend these models just to support ties~\cite{hunter2004mm}, let alone general multinomial outcomes.
 
+% ==============================================================================
 \subsection{Proposed Network}
 
 To address some of the shortcomings discussed in {\bf Section~\ref{sec:badnetwork}}, we propose the following:
@@ -111,7 +123,21 @@ In this network, each player is represented by three skill parameters:
 \item Skill 3: Ability to score (or defend against) three-point opportunities
 \end{enumerate}
 
-On each possession, there are three binary hidden random variables:
+For notational convenience, let
+\[
+A\left(\mathrm{Skills}\right) \tridefeq \exp \left( \sum_i \textrm{Off. Team, Player i Off. Skill } k \right)
+%\quad, \quad \quad
+\]%
+\[
+B\left(\mathrm{Skills}\right) \tridefeq  \exp \left( \sum_i \textrm{Def. Team, Player i Def. Skill } k \right)
+\]%
+where
+\begin{align*}
+\vec \theta_k =& \left\{\textrm{Off. Team, Player i Off. Skill } k\right\}_k
+\\             &\cup \left\{\textrm{Def. Team, Player i Def. Skill } k\right\}_k
+\end{align*}%
+
+On each possession, there are three binary hidden random variables defined by a probability function with parameters that we will learn. In particular, each of the ``Win'' random variables depends on the corresponding skills of players on court as input (which are learned):
 \begin{enumerate}
 \item \emph{Win 1}: True if there was a {\bf guaranteed opportunity} to score one point at some point during the possession.
 \item \emph{Win 2}: True if there was a {\bf guaranteed opportunity} to score two points at some point during the possession.
@@ -119,39 +145,62 @@ On each possession, there are three binary hidden random variables:
 \end{enumerate}
 Note: The term ``opportunity'' is not intended in the typical basketball sense, where it often means ``the opportunity to take a shot''.
 
-Each of the \emph{Win i} events is parameterized by a CPD that depends on the skills of the players.
-In the Bradley-Terry model, we might have:
+
+Each of the \emph{Win k} events has a CPD parameterized by $\vec \theta_k$ (whose values we will learn during training), which depends on the skills of the players.
+In the basic model of player skills, the skill of a five-man team is the sum of the skills of its players.
+
+For example, in a Bradley-Terry model, we might have:
 \[
 \prb{\mathrm{Win}_k = \mathbf{True} \mid \mathrm{Skills} } = \frac{ A\left(\mathrm{Skills}\right) } { A\left(\mathrm{Skills}\right) + B\left(\mathrm{Skills}\right) }
 \]%
-where
+Alternatively, in a Thurstone Case V model, we might have:
 \[
-A\left(\mathrm{Skills}\right) \tridefeq \exp \left( \sum_i \textrm{Player i Off. Skill} \right)
-%\quad, \quad \quad
-\]%
-\[
-B\left(\mathrm{Skills}\right) \tridefeq  \exp \left( \sum_i \textrm{Player i Def. Skill} \right)
+\prb{\mathrm{Win}_k = \mathbf{True} \mid \mathrm{Skills} } = \Phi\left( A - B \right)
 \]%
 
-%and mention a little more specifically that in order to set the probabilities on the Win_i, we have some probability function with parameters that we will learn, and it takes on the skills of players on court as input (which also are learned)
+For notational convenience, we will write $W_k = w_k^1$ for $\mathrm{Win}_k = \mathbf{True}$, and $W_k = w_k^0$ when {\bf False}.
 
-To understand the relationship between $\left\{Win\right\}$ and $Result$, consider the following example:
+To understand the relationship between $\left\{Win\right\}$ and $Result$, let's go through an example.
+Imagine that for a particular five-man unit, the $\theta$ are known and the resulting probabilities are:
+\begin{align*}
+\prb{W_1=w_1^1} = 1\% \quad&, \quad\quad \prb{W_1=w_1^0} = 99\%
+\\
+\prb{W_2=w_2^1} = 25\% \quad&, \quad\quad \prb{W_2=w_2^0} = 75\%
+\\
+\prb{W_3=w_3^1} = 30\% \quad&, \quad\quad \prb{W_3=w_3^0} = 70\%
+\end{align*}%
+This means, on each possession
+\begin{itemize}
+\item the offensive team has a $30\%$ probability of scoring 3 points (i.e. $R=r^3$ with 30\% probability)
+\item the offensive team has a $\left(100\% - 30\%\right) \times 25\%$ probability of scoring 2 points (i.e. $\prb{R=r^2}=17.5\%$)
+\item the offensive team has a $70\% \times 75\% \times 1\%$ probability of scoring 1 point (i.e. $\prb{R=r^1}=0.525\%$)
+\item the offensive team has a $51.975\%$ chance of scoring 0 points
+\end{itemize}
 
-
-
-Now, \emph{Result} simply selects the highest-valued scoring opportunity available during the possession.
+Essentially, \emph{Result} simply selects the highest-scoring decision available during the possession.
 If \emph{Win 3} is true, \emph{Result} is 3; If \emph{Win 3} is false but \emph{Win 2} is true, \emph{Result} is 2; etc.
 
 \emph{Result} can be specified with either a tree-CPD or table-CPD, but it has the following probabilities.
 
-\begin{tabular}{ l|r r r r}
- & $R=0$ & $R=1$ & $R=2$ & $R=3$ \\  \hline
+\begin{tabular}{ r|c c c c|}
+$R|W_1,W_2,W_3$ & $R=r^0$ & $R=r^1$ & $R=r^2$ & $R=r^3$ \\  \hline
 $w^1_3 w^1_2 w^1_1$ & $\varepsilon$ &  $\varepsilon$ &  $\varepsilon$ & $(1 - 3 \varepsilon)$ \\ \hline
+$w^1_3 w^1_2 w^0_1$ & $\varepsilon$ &  $\varepsilon$ &  $\varepsilon$ & $(1 - 3 \varepsilon)$ \\ \hline
+$w^1_3 w^0_2 w^1_1$ & $\varepsilon$ &  $\varepsilon$ &  $\varepsilon$ & $(1 - 3 \varepsilon)$ \\ \hline
+$w^1_3 w^0_2 w^0_1$ & $\varepsilon$ &  $\varepsilon$ &  $\varepsilon$ & $(1 - 3 \varepsilon)$ \\ \hline
+$w^0_3 w^1_2 w^1_1$ & $\varepsilon$ &  $\varepsilon$ &  $(1 - 3 \varepsilon)$ & $\varepsilon$ \\ \hline
+$w^0_3 w^1_2 w^0_1$ & $\varepsilon$ &  $\varepsilon$ &  $(1 - 3 \varepsilon)$ & $\varepsilon$ \\ \hline
+$w^0_3 w^0_2 w^1_1$ & $\varepsilon$ & $(1 - 3 \varepsilon)$   & $\varepsilon$ & $\varepsilon$ \\ \hline
+$w^0_3 w^0_2 w^0_1$ & $(1 - 3 \varepsilon)$ & $\varepsilon$   & $\varepsilon$ & $\varepsilon$ \\ \hline
 \end{tabular}
 
 
 The single parameter $\varepsilon$ is inspired by the noisy-max and essentially indicates unmodelled errors (e.g. offensive or defensive mistakes).
 The better our model fits the actual flow of the game, the smaller $\varepsilon$ should be.
+
+
+% ==============================================================================
+% ==============================================================================
 
 \section{Implemention}
 
@@ -189,6 +238,8 @@ L = & \left( \prod_{\mathcal{D}} \prb{R = \mathcal{D}_r \mid W_1 = \mathcal{D}_1
 %L = \prb{R = \mathcal{D}_r \mid \mathcal{D}_1, \mathcal{D}_2, \mathcal{D}_3, \varepsilon}
 \end{align*}%
 
+% ==============================================================================
+
 \subsection{Maximum Likelihood: $\varepsilon$}
 \[
 \argmax{\varepsilon}{ \prod_{\mathcal{D}} \prb{R = \mathcal{D}_r \mid W_1 = \mathcal{D}_1, W_2 = \mathcal{D}_2, W_3 = \mathcal{D}_3, \varepsilon}  }
@@ -213,6 +264,7 @@ where
 \end{align*}%
 and $ M_{\mathrm noise}$ is a count of the remaining observations such that $M_{\mathrm modelled} + M_{\mathrm noise} = M$, the total number of observations.
 
+% ==============================================================================
 \subsection{Maximum Likelihood: $\theta_i$}
 
 Let
@@ -238,6 +290,8 @@ Now, we wish to compute:
 \]%
 when $W_i$ is fully observed with the solution expressed with respect to sufficient statistics of $\vec \theta_i$.
 
+
+% TODO(jdhuang): Add the C variable which multiplexes which players are on the court.
 
 \section{Results}
 
