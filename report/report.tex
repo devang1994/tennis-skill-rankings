@@ -16,14 +16,11 @@
 \newcommand{\mabs}[1]{\ensuremath{  \left| #1 \right|  }}
 
 \newcommand{\prb}[1]{\ensuremath{  \mathrm{Pr}\left\{ #1 \right\}  }}
-\newcommand{\tridefeq}{\ensuremath{  \,{\overset{\triangle}{=}}\;   }}
+\newcommand{\Elin}[1]{\ensuremath{     \mathrm{E}\left[ #1 \right]   }}
 
 \newcommand{\normrv}[2]{\ensuremath{          \mathcal{N}\left(#1,#2\right)    }}
 
 \newcommand{\ind}[1]{\ensuremath{  \pmb{\mathtt{1}}\left\{ #1 \right\}  }}
-
-\newcommand{\mtr}{\ensuremath{  {\operatorname{T}}}  }
-\newcommand{\mdd}{\ensuremath{   \operatorname{d}\!  }} 
 
 %==================================================================================================
 
@@ -65,7 +62,9 @@ To reduce noise, we ignore ``garbage time'' posessions. To simplify the model we
 
 We begin with a very basic model that follows traditional ``skill ranking'' in the sense that each player has an unobserved (or parameterized) skill that has some distribution, and using inference (or parameter estimation) we can determine the value of each player's skill.
 In this network, we decided each player would have a hidden offsensive and defensive skill value, shared across possessions:
-\includegraphics[width=0.95\linewidth]{figures/network}
+\begin{center}
+	\includegraphics[width=0.90\linewidth]{figures/network}
+\end{center}
 These skills would contribute deterministically in some way to an ``effective'' total skill differential between the two teams, and then the \emph{Result} variable would be one of four outcomes:
 \begin{itemize}
 \item $R=0$ Offensive Team Scores nothing, change of possession (e.g. turnover, defensive rebound, etc.)
@@ -77,12 +76,15 @@ These skills would contribute deterministically in some way to an ``effective'' 
 The \emph{On Court} random variable ``multiplexes'' between those players that are on the court and those that are not.
 
 \subsection{Issues}
+\label{sec:badnetwork}
 These traditional models~\cite{herbrich2007trueskilltm} have difficulty capturing the proper causalities when Results can have multinomial-valued outcomes.
 For example, regardless of the parameterization of the \emph{Results} CPD, both $\prb{ R = 2}$ and $\prb{R= 3}$ would depend on the same skills of the same players.
 The relative distribution of outcomes $\prb{R = 2}$ vs. $\prb{R = 3}$ would be shared across all ``units'' (i.e. all combinations of \emph{On Court} assignments).
 
 In reality, a team that scores $R=3$ half the time and $R=1$ half the time is just as good as a team that scores $R=2$ all the time.
 However, any traditional Win/Lose model will unfairly penalize the likelihood of one of these teams over the other and leads to under-fitting.
+This might suggest that we have a random variable that represents $\Elin{\mathrm points scored}$, but this doesn't pass the clarity test.
+
 
 Secondly, there is a lot of value in being able to compare with the state-of-the-art in the Win/Lose based Bayesian Skill Ranking literature.
 Specifically, there is common debate over logistic vs. Gaussian skill/performance distributions and we wish to be sensitive to that conversation in this project.
@@ -90,7 +92,37 @@ Having a multinomial outcome makes it difficult to directly compare logistic vs.
 
 \subsection{Proposed Network}
 
-\includegraphics[width=0.95\linewidth]{figures/newnetwork}
+To address some of the shortcomings discussed in {\bf Section~\ref{sec:badnetwork}}, we propose the following:
+\begin{center}
+	\includegraphics[width=1.05\linewidth]{figures/newnetwork}
+\end{center}
+
+In this network, each player is represented by three skill parameters:
+\begin{enumerate}
+\item Skill 1: Ability to score (or defend against) one-point opportunities
+\item Skill 2: Ability to score (or defend against) two-point opportunities
+\item Skill 3: Ability to score (or defend against) three-point opportunities
+\end{enumerate}
+
+On each possession, there are three binary hidden random variables:
+\begin{enumerate}
+\item \emph{Win 1}: True if there was an opportunity to score one point during the possession.
+\item \emph{Win 2}: True if there was an opportunity to score two points during the possession.
+\item \emph{Win 3}: True if there was an opportunity to score three points during the possession.
+\end{enumerate}
+
+Now, \emph{Result} simply selects the highest-valued scoring opportunity available during the possession.
+If \emph{Win 3} is true, \emph{Result} is 3; If \emph{Win 3} is false but \emph{Win 2} is true, \emph{Result} is 2; etc.
+
+\emph{Result} can be specified with either a tree-CPD or table-CPD, but it has the following probabilities.
+
+\begin{tabular}{ l|r r r r}
+ & $R=0$ & $R=1$ & $R=2$ & $R=3$ \\  \hline
+$w^1_3 w^1_2 w^1_1$ & $\varepsilon$ &  $\varepsilon$ &  $\varepsilon$ & $(1 - 3 \varepsilon)$ \\ \hline
+\end{tabular}
+
+The single parameter $\varepsilon$ is inspired by the noisy-max and essentially indicates unmodelled errors (e.g. offensive or defensive mistakes).
+The better our model fits the actual flow of the game, the smaller $\varepsilon$ should be.
 
 \section{Implemention}
 
