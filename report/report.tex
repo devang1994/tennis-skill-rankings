@@ -1,8 +1,12 @@
 \documentclass[10pt,twocolumn]{article}
 
 \usepackage[small,compact]{titlesec} %http://gurmeet.net/computer-science/latex-tips-n-tricks-for-conference-papers/
-\usepackage{microtype}
+\usepackage{microtype} % Make the font and alignment look cleaner
 \usepackage{graphicx}
+
+% For \overset, etc.
+\usepackage{amsmath}
+\usepackage{cancel}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Margins
 \setlength{\columnsep}{0.25in}
@@ -14,9 +18,12 @@
 %==================================================================================================
 %   MATH MACROS
 \newcommand{\mabs}[1]{\ensuremath{  \left| #1 \right|  }}
+\newcommand{\argmax}[2]{\ensuremath{   \underset{#1}{\operatorname{argmax}} \left\{ #2 \right\}  }} 
 
 \newcommand{\prb}[1]{\ensuremath{  \mathrm{Pr}\left\{ #1 \right\}  }}
 \newcommand{\Elin}[1]{\ensuremath{     \mathrm{E}\left[ #1 \right]   }}
+
+\newcommand{\tridefeq}{\ensuremath{  \,{\overset{\triangle}{=}}\;   }}
 
 \newcommand{\normrv}[2]{\ensuremath{          \mathcal{N}\left(#1,#2\right)    }}
 
@@ -106,10 +113,31 @@ In this network, each player is represented by three skill parameters:
 
 On each possession, there are three binary hidden random variables:
 \begin{enumerate}
-\item \emph{Win 1}: True if there was an opportunity to score one point during the possession.
-\item \emph{Win 2}: True if there was an opportunity to score two points during the possession.
-\item \emph{Win 3}: True if there was an opportunity to score three points during the possession.
+\item \emph{Win 1}: True if there was a {\bf guaranteed opportunity} to score one point at some point during the possession.
+\item \emph{Win 2}: True if there was a {\bf guaranteed opportunity} to score two points at some point during the possession.
+\item \emph{Win 3}: True if there was a {\bf guaranteed opportunity} to score three points at some point during the possession.
 \end{enumerate}
+Note: The term ``opportunity'' is not intended in the typical basketball sense, where it often means ``the opportunity to take a shot''.
+
+Each of the \emph{Win i} events is parameterized by a CPD that depends on the skills of the players.
+In the Bradley-Terry model, we might have:
+\[
+\prb{\mathrm{Win}_k = \mathbf{True} \mid \mathrm{Skills} } = \frac{ A\left(\mathrm{Skills}\right) } { A\left(\mathrm{Skills}\right) + B\left(\mathrm{Skills}\right) }
+\]%
+where
+\[
+A\left(\mathrm{Skills}\right) \tridefeq \exp \left( \sum_i \textrm{Player i Off. Skill} \right)
+%\quad, \quad \quad
+\]%
+\[
+B\left(\mathrm{Skills}\right) \tridefeq  \exp \left( \sum_i \textrm{Player i Def. Skill} \right)
+\]%
+
+%and mention a little more specifically that in order to set the probabilities on the Win_i, we have some probability function with parameters that we will learn, and it takes on the skills of players on court as input (which also are learned)
+
+To understand the relationship between $\left\{Win\right\}$ and $Result$, consider the following example:
+
+
 
 Now, \emph{Result} simply selects the highest-valued scoring opportunity available during the possession.
 If \emph{Win 3} is true, \emph{Result} is 3; If \emph{Win 3} is false but \emph{Win 2} is true, \emph{Result} is 2; etc.
@@ -121,12 +149,95 @@ If \emph{Win 3} is true, \emph{Result} is 3; If \emph{Win 3} is false but \emph{
 $w^1_3 w^1_2 w^1_1$ & $\varepsilon$ &  $\varepsilon$ &  $\varepsilon$ & $(1 - 3 \varepsilon)$ \\ \hline
 \end{tabular}
 
+
 The single parameter $\varepsilon$ is inspired by the noisy-max and essentially indicates unmodelled errors (e.g. offensive or defensive mistakes).
 The better our model fits the actual flow of the game, the smaller $\varepsilon$ should be.
 
 \section{Implemention}
 
-Summary
+Maximum Likelihood starts with:
+\begin{align*}
+L &= \prod_{\mathcal{D}} \prb{\mathcal{D} \mid \vec \theta_1,\vec \theta_2,\vec \theta_3, \varepsilon}
+\\ &=
+\prod_{\mathcal{D}}
+\sum_{\substack{w_1 \in \operatorname{Val}\left(W_1\right) \\ w_2 \in \operatorname{Val}\left(W_2\right) \\ w_3 \in \operatorname{Val}\left(W_3\right)}}
+\\ & \quad \quad \prb{R = \mathcal{D}_r, W_1 = w_1, W_2 = w_2, W_3 = w_3 \mid \vec \theta_1,\vec \theta_2,\vec \theta_3, \varepsilon}
+\end{align*}%
+\begin{align*}
+= \prod_{\mathcal{D}}
+ & \sum_{\substack{w_1 \in \operatorname{Val}\left(W_1\right) \\ w_2 \in \operatorname{Val}\left(W_2\right) \\ w_3 \in \operatorname{Val}\left(W_3\right)}}
+\\ & \prb{R = \mathcal{D}_r \mid W_1 = w_1, W_2 = w_2, W_3 = w_3, \cancel{ \vec \theta_1,\vec \theta_2,\vec \theta_3}, \varepsilon}
+\\ & \prb{W_1 = w_1 \mid \vec \theta_1, \cancel{\vec \theta_2,\vec \theta_3, \varepsilon}}
+\\ & \prb{W_2 = w_2 \mid \vec \theta_2, \cancel{\vec \theta_1,\vec \theta_3, \varepsilon}}
+\\ & \prb{W_3 = w_3 \mid \vec \theta_3, \cancel{\vec \theta_1,\vec \theta_2, \varepsilon}}
+\end{align*}%
+%which provides global decomposition allowing us to log-maximize each section of the network separately:
+%\begin{align*}
+%L = & \left( \prod_{\mathcal{D}} \sum_{w_1,w_2,w_3} \prb{R = \mathcal{D}_r \mid W_1 = w_1, W_2 = w_2, W_3 = w_3, \varepsilon} \right)
+%\\ & \left( \prod_{\mathcal{D}} \sum_{w_1} \prb{W_1 = w_1 \mid \vec \theta_1} \right)
+%\\ & \left( \prod_{\mathcal{D}} \sum_{w_2} \prb{W_2 = w_2 \mid \vec \theta_2} \right)
+%\\ & \left( \prod_{\mathcal{D}} \sum_{w_3} \prb{W_3 = w_3 \mid \vec \theta_3} \right)
+%\end{align*}%
+
+In the M-step, we assume $\mathcal{D}$ has observed $W_1 = \mathcal{D}_1$, $W_2= \mathcal{D}_2$, and $W_3= \mathcal{D}_3$ (after soft assignments during the E-step)
+which provides global decomposition allowing us to log-maximize each section of the network separately:
+\begin{align*}
+L = & \left( \prod_{\mathcal{D}} \prb{R = \mathcal{D}_r \mid W_1 = \mathcal{D}_1, W_2 = \mathcal{D}_2, W_3 = \mathcal{D}_3, \varepsilon} \right)
+\\ & \left( \prod_{\mathcal{D}} \prb{W_1 = \mathcal{D}_1 \mid \vec \theta_1} \right)
+\\ & \left( \prod_{\mathcal{D}} \prb{W_2 = \mathcal{D}_2 \mid \vec \theta_2} \right)
+\\ & \left( \prod_{\mathcal{D}} \prb{W_3 = \mathcal{D}_3 \mid \vec \theta_3} \right)
+%L = \prb{R = \mathcal{D}_r \mid \mathcal{D}_1, \mathcal{D}_2, \mathcal{D}_3, \varepsilon}
+\end{align*}%
+
+\subsection{Maximum Likelihood: $\varepsilon$}
+\[
+\argmax{\varepsilon}{ \prod_{\mathcal{D}} \prb{R = \mathcal{D}_r \mid W_1 = \mathcal{D}_1, W_2 = \mathcal{D}_2, W_3 = \mathcal{D}_3, \varepsilon}  }
+\]%
+%\[
+%= \argmax{\varepsilon}{ \sum_{\mathcal{D}} \log \prb{R = \mathcal{D}_r \mid W_1 = \mathcal{D}_1, W_2 = \mathcal{D}_2, W_3 = \mathcal{D}_3, \varepsilon}  }
+%\]%
+\[
+= \argmax{\varepsilon}{ \left(1-3\varepsilon\right)^{M_{\mathrm modelled}} \left(\varepsilon\right)^{M_{\mathrm noise}} }
+\]%
+with solution
+\[
+\varepsilon = \frac{M_{\mathrm noise}}{M_{\mathrm noise} + M_{\mathrm modelled}}
+\]%
+where
+\begin{align*}
+ M_{\mathrm modelled} \tridefeq
+   &\quad \operatorname{M}\left[ r^3, w_3^1 \right]
+\\ &+ \operatorname{M}\left[ r^2, w_3^0, w_2^1 \right]
+\\ &+ \operatorname{M}\left[ r^1, w_3^0, w_2^0, w_1^1 \right]
+\\ &+ \operatorname{M}\left[ r^0, w_3^0, w_2^0, w_1^0 \right]
+\end{align*}%
+and $ M_{\mathrm noise}$ is a count of the remaining observations such that $M_{\mathrm modelled} + M_{\mathrm noise} = M$, the total number of observations.
+
+\subsection{Maximum Likelihood: $\theta_i$}
+
+Let
+\[
+\prb{W_i = w_i^1 \mid \vec \theta_i}
+\]%
+\[
+ \tridefeq \frac{1}
+{1 + \exp\left(\Delta_i \right) }
+\]%
+where
+\[
+\Delta_i \tridefeq
+   \left(\theta_{i,\mathrm{Off.P1}} + \ldots + \theta_{i,\mathrm{Off.P12}}\right)
+ + \left(\theta_{i,\mathrm{Def.P1}} + \ldots + \theta_{i,\mathrm{Def.P12}}\right)
+\]%
+Without loss of generality, we can assume that the defensive $\theta$s are negative numbers, that reduce the overall $\prb{Win}$ when added.
+(This is simpler than subtracting positive $\theta_{\mathrm{Def}}$ and then having to keep track of positive and negative signs the whole time.)
+
+Now, we wish to compute:
+\[
+\argmax{\vec \theta_i}{ \prod_{\mathcal{D}} \prb{W_i = \mathcal{D}_i \mid \vec \theta_i}  }
+\]%
+when $W_i$ is fully observed with the solution expressed with respect to sufficient statistics of $\vec \theta_i$.
+
 
 \section{Results}
 
