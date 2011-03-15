@@ -37,7 +37,7 @@ E_D_schedule = logical([
 
 %We have L=1 thetas because there is one theta for every player.
 %L is the number of columns in the dataset, but one of the columns is R
-Theta = zeros(3, L-1); % With no prior information, initialize to zeros.
+Theta = zeros(3, L-1); % With no prior information, initialize to zeros (we used to start at all zeroes on every call to mle_logistic anyway)
 
 %========================
 %   Begin EM Algorithm
@@ -136,6 +136,9 @@ for j = 1:MAX_ITER
 			weights = [pr_wi_false; pr_wi_true];
 			[theta_w_i itersneeded] = mle_logistic(X,y,weights,theta_init);
 			disp(['    MLE iterations: ' num2str(itersneeded)]);
+			if any(isnan(theta_w_i))
+				dbstop if naninf
+			end
 		end
 		
 		% theta_w_i is returned as a column vector
