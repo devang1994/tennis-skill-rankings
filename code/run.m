@@ -7,6 +7,7 @@ loaddata
 MAX_ITER = 500
 
 dbclear all
-[Theta_BradleyTerry loglikelihood_BradleyTerry] = basketball_network_EM(dataset, MAX_ITER, false)
-dbclear all
-[Theta_ThurstoneCaseV loglikelihood_ThurstoneCaseV] = basketball_network_EM(dataset, MAX_ITER, true)
+[Theta_BradleyTerry loglikelihood_BradleyTerry epsilon_BradleyTerry] = basketball_network_EM(dataset, MAX_ITER, false)
+%dbclear all
+%  I don't think this is exactly what we want, I'll look over the math in a bit. -- Joseph
+%[Theta_ThurstoneCaseV loglikelihood_ThurstoneCaseV epsilon] = basketball_network_EM(dataset, MAX_ITER, true)

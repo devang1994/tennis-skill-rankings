@@ -1,4 +1,4 @@
-function [Theta ll] = basketball_network_EM(dataset, MAX_ITER, gaussian)
+function [Theta log_likelihood epsilon] = basketball_network_EM(dataset, MAX_ITER, gaussian)
 
 % dataset is MxL, where M is number of possessions,
 % and L is 12*2*num_teams (for O and D). Note that if we
@@ -9,26 +9,34 @@ function [Theta ll] = basketball_network_EM(dataset, MAX_ITER, gaussian)
 
 M = size(dataset,1);
 L = size(dataset,2); % (1+24*num_teams)
-W = zeros(M,3);
+% Each of the datapoints receives partial assignments to the 8 possible combinations of W_1, W_2, and W_3
+% We will use the following legend.
+% E_D(m,k): The m-th datapoint's probability of being assigned combination k, where
+E_D = nan(M,8);
+E_D_schedule = [0 0 0; % k=1 --> Lose1, Lose2, Lose3
+                0 0 1; % k=2 --> Lose1, Lose2, Win3
+                0 1 0; % k=3 --> Lose1, Win2 , Lose3
+                0 1 1; %  .
+                1 0 0; %  .
+                1 0 1; %  .
+                1 1 0; % k=7 --> Win1, Win2, Lose3
+                1 1 1;]% k=8 --> Win1, Win2, Win3
+
 %We have L=1 thetas because there is one theta for every player.
 %L is the number of columns in the dataset, but one of the columns is R
 Theta = nan(3, L-1); % This will be immediately overwritten, so we can catch errors by initializating to NaN
 
-%set initial values for W
+%Get initial values for E_D
 M_count = zeros(4,1);
 for m = 1:M
 	M_count(dataset(m,1)+1) = M_count(dataset(m,1)+1) + 1;
 end
-W(:,3) = M_count(4)/M * ones(M,1);
-W(:,2) = M_count(3)/M * ones(M,1) ./ (ones(M,1) - W(:,3));
-W(:,1) = M_count(2)/M * ones(M,1) ./ (ones(M,1) - W(:,2));
-M_r = nan(4,1);
-epsilon = .02; %arbitrary initialization
-M_r(4) = (1-3*epsilon) * sum(W(:,3));
-M_r(3) = (1-3*epsilon) * sum(W(:,2) .* (ones(M,1)-W(:,3)));
-M_r(2) = (1-3*epsilon) * sum(W(:,1) .* (ones(M,1)-W(:,3)) .* (ones(M,1)-W(:,2)));
-M_r(1) = (1-3*epsilon) * sum((ones(M,1)-W(:,1)) .* (ones(M,1)-W(:,3)) .* (ones(M,1)-W(:,2)));
-M_noise = M - sum(M_r);
+W3_init = M_count(4)/M * ones(M,1);
+W2_init = M_count(3)/M * ones(M,1) ./ (ones(M,1) - W(:,3));
+W1_init = M_count(2)/M * ones(M,1) ./ (ones(M,1) - W(:,2));
+W0_init = 1 - W3_init - W2_init - W1_init;
+
+
 
 OldProb = W;
 if gaussian
@@ -44,33 +52,37 @@ for j = 1:MAX_ITER
 	% Parameter estimation for W_i
 	for i = 1:3
 		if gaussian
-			% Revision 3164906e1692 note:
-			% It looks like s is being set to zero here.
-			[theta s(i)] = MLE_Gaussian(W(:,i),dataset(:,2:end));
+			theta = MLE_Gaussian(W(:,i),dataset(:,2:end));
 		else
-			[theta, ll] = mle_logistic (dataset(:,2:end),W(:,i));
+			theta = mle_logistic (dataset(:,2:end),W(:,i));
 		end	
 		% theta is a column vector to start
 		Theta(i,:) = theta';
 	end
 
 	% Parameter estimation for epsilon (that was easy)
-	epsilon = M_noise / (3*M);
+	epsilon = %M_noise / (3*M);
 
 	%=====================
 	%   Soft-Assignment
 	%=====================
 
-	% Probability calculations for each datapoint
+	% Probability calculations for each unique datapoint
+	% We need, for each possible datapoint,
+        %   Pr{D_r, C, W_1, W_2, W_3 | theta, epsilon}
+	%   = Pr{D_r|W_1, W_2, W_3,epsilon} * Pr{W_1|theta, C} * Pr{W_2|theta, C} * Pr{W_3|theta, C} * Pr{C}
 	for m=1:M
-		if gaussian
-			W(m,1) = normpdf(0,Theta(1,:)*dataset(m,2:end)',s(1));
-			W(m,2) = normpdf(0,Theta(2,:)*dataset(m,2:end)',s(2));
-			W(m,3) = normpdf(0,Theta(3,:)*dataset(m,2:end)',s(3));
-		else
-			W(m,1) = sigmoid(Theta(1,:)*dataset(m,2:end)');
-			W(m,2) = sigmoid(Theta(2,:)*dataset(m,2:end)');
-			W(m,3) = sigmoid(Theta(3,:)*dataset(m,2:end)');
+		for k=1:8
+			if gaussian
+				W1_true = normpdf(0,Theta(1,:)*dataset(m,2:end)',1.0);
+				W2_true = normpdf(0,Theta(2,:)*dataset(m,2:end)',1.0);
+				W3_true = normpdf(0,Theta(3,:)*dataset(m,2:end)',1.0);
+			else
+				W1_true = sigmoid(Theta(1,:)*dataset(m,2:end)');
+				W2_true = sigmoid(Theta(2,:)*dataset(m,2:end)');
+				W3_true = sigmoid(Theta(3,:)*dataset(m,2:end)');
+			end
+			E_D(m)
 		end
 	end
 
