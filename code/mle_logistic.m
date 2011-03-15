@@ -1,4 +1,4 @@
-function [theta,ll] = log_regression(X,y,w)
+function [theta,i] = mle_logistic(X,y,w,theta_init)
 % Weighted linear regression
 %
 % http://www.stanford.edu/class/cs229/notes/cs229-notes1.pdf
@@ -21,11 +21,12 @@ function [theta,ll] = log_regression(X,y,w)
 % with H = hessian, grad = gradient
 % returns theta as a column vector
 MAX_ITERS = 50;
+EPS_STOPPING = 1e-6;
 
 % X = [ones(size(X,1),1) X]; %no need to add an intercept, just take X as passed in to the function
 p = size(X,1);
 n = size(X,2);
-theta = zeros(n,1);
+theta = theta_init;
 
 for i=1:MAX_ITERS
 	
@@ -39,6 +40,12 @@ for i=1:MAX_ITERS
 	%	ll(i) = ll(i) + Y(j)*log(hxj) + (1-Y(j))*log(1-hxj);
 	end
 	
-	theta = theta - H \ grad;
+	update_step = - pinv(H) * grad;
+	theta = theta + update_step;
+	
+	%max(abs(update_step)) / (max(theta) - min(theta)),
+	if max(abs(update_step)) < EPS_STOPPING * (max(theta) - min(theta))
+		break
+	end
 end
 
