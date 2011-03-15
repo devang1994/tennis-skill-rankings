@@ -74,7 +74,7 @@ for j = 1:MAX_ITER
 	% M[r^3,w_3^1]:
 	%   dataset(:,1) == 3
 	%   E_D_schedule(:,3) == true
-	M_r3_w3 = sum(sum(E_D(dataset(:,1) == 3, E_D_schedule(:,2)')));
+	M_r3_w3 = sum(sum(E_D(dataset(:,1) == 3, E_D_schedule(:,3)')));
 	% M[r^2,w_3^0,w_2^1]:
 	%   dataset(:,1) == 2
 	%   E_D_schedule(:,3) == false
@@ -85,15 +85,15 @@ for j = 1:MAX_ITER
 	%   E_D_schedule(:,3) == false
 	%   E_D_schedule(:,2) == false
 	%   E_D_schedule(:,1) == true
-	M_r2_l3_l2_w1 = sum(sum(E_D(dataset(:,1) == 1, E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)')));
+	M_r1_l3_l2_w1 = sum(sum(E_D(dataset(:,1) == 1, E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)')));
 	% M[r^1,w_3^0,w_2^0,w_1^0]:
 	%   dataset(:,1) == 1
 	%   E_D_schedule(:,3) == false
 	%   E_D_schedule(:,2) == false
 	%   E_D_schedule(:,1) == false
-	M_r2_l3_l2_l1 = sum(sum(E_D(dataset(:,1) == 0, ~E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)')));
+	M_r0_l3_l2_l1 = sum(sum(E_D(dataset(:,1) == 0, ~E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)')));
 
-	M_modelled = M_r3_w3 + M_r2_l3_w2 + M_r2_l3_l2_w1 + M_r2_l3_l2_l1;
+	M_modelled = M_r3_w3 + M_r2_l3_w2 + M_r1_l3_l2_w1 + M_r0_l3_l2_l1;
 	M_noise = M - M_modelled;
 
 	%============
