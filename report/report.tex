@@ -75,7 +75,7 @@ Basketball brings two key challenges to the field of Bayesian Skill estimation.
 We model the result of each possession as an independent and identically distributed random variable, \emph{Result}.
 An NBA roster has 12 players, but only five of them are on the court for a given team during any single posession.
 
-To reduce noise, we ignore ``garbage time'' posessions. To simplify the model we ignore possessions that end in a time-out.
+To reduce noise, we ignore ``garbage time'' posessions. To simplify the model we will only consider possessions in the first half of games.
 
 We begin with a very basic model that follows traditional ``skill ranking'' in the sense that each player has an unobserved (or parameterized) skill that has some distribution, and using inference (or parameter estimation) we can determine the value of each player's skill.
 In this network, we decided each player would have a hidden offsensive and defensive skill value, shared across possessions:
@@ -89,6 +89,8 @@ These skills would contribute deterministically in some way to an ``effective'' 
 \item $R=2$ Offensive Team Scores 2 points
 \item $R=3$ Offensive Team Scores 3 points
 \end{itemize}
+
+Note: We are ignoring the rare 4 point plays. 
 
 The \emph{On Court} random variable ``multiplexes'' between those players that are on the court and those that are not.
 
@@ -165,18 +167,18 @@ For notational convenience, we will write $W_k = w_k^1$ for $\mathrm{Win}_k = \m
 To understand the relationship between $\left\{Win\right\}$ and $Result$, let's go through an example.
 Imagine that for a particular five-man unit, the $\theta$ are known and the resulting probabilities are:
 \begin{align*}
-\prb{W_1=w_1^1} = 1\% \quad&, \quad\quad \prb{W_1=w_1^0} = 99\%
+\prb{W_1=w_1^1} = 5\% \quad&, \quad\quad \prb{W_1=w_1^0} = 95\%
 \\
-\prb{W_2=w_2^1} = 25\% \quad&, \quad\quad \prb{W_2=w_2^0} = 75\%
+\prb{W_2=w_2^1} = 35\% \quad&, \quad\quad \prb{W_2=w_2^0} = 65\%
 \\
-\prb{W_3=w_3^1} = 30\% \quad&, \quad\quad \prb{W_3=w_3^0} = 70\%
+\prb{W_3=w_3^1} = 10\% \quad&, \quad\quad \prb{W_3=w_3^0} = 90\%
 \end{align*}%
 This means, on each possession
 \begin{itemize}
-\item the offensive team has a $30\%$ probability of scoring 3 points (i.e. $R=r^3$ with 30\% probability)
-\item the offensive team has a $\left(100\% - 30\%\right) \times 25\%$ probability of scoring 2 points (i.e. $\prb{R=r^2}=17.5\%$)
-\item the offensive team has a $70\% \times 75\% \times 1\%$ probability of scoring 1 point (i.e. $\prb{R=r^1}=0.525\%$)
-\item the offensive team has a $51.975\%$ chance of scoring 0 points
+\item the offensive team has a $10\%$ probability of scoring 3 points (i.e. $R=r^3$ with 90\% probability)
+\item the offensive team has a $\left(100\% - 10\%\right) \times 35\%$ probability of scoring 2 points (i.e. $\prb{R=r^2}=31.50\%$)
+\item the offensive team has a $90\% \times 65\% \times 5\%$ probability of scoring 1 point (i.e. $\prb{R=r^1}=2.925\%$)
+\item the offensive team has a $55.575\%$ chance of scoring 0 points
 \end{itemize}
 
 Essentially, \emph{Result} simply selects the highest-scoring decision available during the possession.
