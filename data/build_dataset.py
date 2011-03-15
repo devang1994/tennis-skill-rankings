@@ -34,6 +34,7 @@ import csv
 OFFENSIVE_TEAM = 'DET'
 DEFENSIVE_TEAM = 'CLE'
 SKIP_SECOND_HALF = True # Simple way to avoid garbage time
+MAX_THREE_POINTS = True # Assume plays scoring 4 or more points are just for 3 in the model. There wouldn't be enough w_4^1 datapoints to warrant modelling them.
 
 #======================
 #   Helper Functions
@@ -80,93 +81,143 @@ def parse_raw_data_from_rows(rows_iterable):
 
     return output
 
-def get_free_throw_outcome(d):
+def get_unique_player_names(team_names, raw_dictionaries):
+    """Return the list of unique players on each team
     
-def get_possession_outcome(d_prev, d):
+    :param team_names: A tuple of the form (string1, string2) describing the order of teams
+    :param raw_dictionaries: A list of dictionaries corresponding to the rows of the raw data file
+    
+    :rtype: a dictionary of the form {TEAMNAME: set([player_name, player_name, ...]), TEAMNAME: set([player_name, player_name, ...])}
+    
+    """
+    names = {}
+    
+    # Columns 0 through 4 are for the first team (away)
+    names{team_names[0]} = reduce(set.union, frozenset(d[:5]) for d in raw_dictionaries)
+    # Columns 5 through 9 are for the second team (home)s
+    names{team_names[1]} = reduce(set.union, frozenset(d[5:10]) for d in raw_dictionaries)
+
+    return names
+
+    
+def get_free_throw_outcome(d):
+    """
+    
+    :rtype: 
+    
+    """
+    if d['etype'[] == free throw 
+
+def get_possession_outcome(d, d_next):
     """Return a dictionary with only the data relevant to the outcome of the possession
 
-    :param d_prev: can be none, but then d['team'] would be 'OFF' and it's probably the jump-ball
-    
-    #first you only care about 1st or 2nd period (#10)
-    
-
-    #now I would check type (#13)
-      if turnover
-        result = 0
-        
-      if shot then you have to check result (#27). 
-        if result == made, take points (#24)
-          if "and 1", switch to foul mode
-
-      if foul, 
-        read until d['num'] == d['outof']
-        # IGNORE ANYTHING ELSE DURING THIS TIME BECAUSE sometimes rebounds happen between foul shots
-        
-      #if d['etype'] == 'rebound' and d['type'] != 'off':
-      if d['result'] == missed:
-           team = d['team']
-              next line
-              if d['etype'] == rebound:
-                      if d['team'] != team:
-                              result = 0
-                              break
-       
-       if d['etype'] == 'turnover': 
-         result = 0
-       if d['etype'] == 'foul' 
-       if d['type'] == 'defense 3 second' || d['type'] == 'technical':
-         continue (since ignore the subsequent etype == free throw *&&&ype == technical
-       else read until d['num'] == 'd['outof']:
-         if d['result'] == 'made':
-           result++
-      
-    :rtype: either a (integer, boolean) tuple, or None
-          None --> Ignore this line, e.g. it's not an end-of-possession event
-          (score, False) --> scored `score` points, end of possession.
-          (score, True) --> start with `score` points, add more for subsequent foul shots
+    :rtype: a dictionary of the form {'offensive team': string, 'points scored': integer, 'fouled': boolean}
+          e.g. {'offensive team': 'CLE', 'points scored': 0, 'fouled': False}
+               Cleveland turns over the ball
+               
+          e.g. {'offensive team': 'CLE', 'points scored': 0, 'fouled': True}
+               Cleveland is fouled during a shot, goes to the free throw line
+               
+          e.g. {'offensive team': 'CLE', 'points scored': 2, 'fouled': False}
+               Cleveland scored 2 points, end of possession (no foul shots)
           
-          score can take on various sentinel values as well:
-          `score == -1` means "missed shot" 
+          e.g. {'offensive team': 'CLE', 'points scored': 2, 'fouled': False}
+               Cleveland scored 2 points, end of possession (no foul shots)
+          (team, score, True) --> start with `score` points, add more for subsequent foul shots
+           
+          we also return None if this row of the data is irrelevant, e.g. it's not an end-of-possession event
+          
     
     """
     assert(d['period'] in ['1', '2', '3', '4'])
     
-    if SKIP_SECOND_HALF and (d['period'] in ['3', '4'])
-        # Ignore garbage time, configure this in the Configuration section of this script
-        return None
+    #============================================================
+    #   Events that have nothing to do with scoring (attempts)
+    #============================================================
     
     if d['team'] == 'OFF':
         # Probably a jump-ball or something, but d_prev may not be valid here either
         return None
+    
+    #==========================
+    #   Configurable filters
+    #==========================
+    
+    if SKIP_SECOND_HALF and (d['period'] in ['3', '4'])
+        # Ignore garbage time, configure this in the Configuration section of this script
+        return None
+
+    #==========================
+    #   Scoring and attempts
+    #==========================
 
     if d['etype'] == 'turnover':
-        return (0, False)
-    elif d['etype'] == 'rebound' and d['type'] != 'off':
-        return (0, False)
+        # Turnover
+        return (d['team'], 0, False)
+
+    elif d['etype'] == 'shot' and d['result'] == 'missed':
+        # Shot missed
+        if d_next['etype'] == 'rebound' and d_next['team'] != d['team']:
+            # Shot missed, End-of-possession on defensive rebound
+            return (d['team'], 0, False)
+        else:
+            # Shot missed, but nothing to indicate that the "possession" has ended so ignore this entry
+            return None
+
     elif d['etype'] == 'shot' and d['result'] == 'made':
+        # Shot made
         scored = int(d['points'])
-        #AND1?
-        return (scored, fouled)
-    elif d['type'] == 'foul':
-        return (0, True)
+        
+        if d_next['etype'] == 'foul' && d_next['time'] == d['time']:
+            # Shot made, bonus free-throw
+            return (d['team'],scored, True)
+        else:
+            # Shot made, no fouls
+            return (d['team'],scored, False)
+
+    elif d['etype'] == 'foul':
+        # Fouled on the play
+        if d['type'] == 'defense 3 second' or d['type'] == 'technical':
+            return None # Don't care about silly fouls
+        else:
+            return (d['team'], 0, True)
     else:
         return None
         
-    
 def get_possession_outcomes(raw_dictionaries):
+    """Call get_possession_outcome() on a loop
+    
+    :param raw_dictionaries: a list of event dictionaries
+    :rtype: a dictionary of the form {'TEAM1': list_of_event_dictionaries, 'TEAM2': list_of_event_dictionaries}
+    
+    """
     result_outcome_dicts = []
-    prev = None
-    for possession_dictionary in raw_dictionaries:
-        result, start_free_throws = get_possession_outcome(prev, possession_dictionary)
-        
-        if result is None:
-            pass
-        elif result == {}:
-            result_outcome_dicts.pop()
+    looking_for_free_throws = False
+    
+    for indx, curr in enumerate(raw_dictionaries):
+        if looking_for_free_throws:
+            # FREE THROWS MODE
+            looking_for_free_throws, bonus_points = get_free_throw_outcome(curr, next)
+
+            
         else:
-            result_outcome_dicts.append(result)
+            # REGULAR MODE
         
-        prev = possession_dictionary
+            # Peek ahead to iterate over the dictionary in pairs
+            try:
+                next = raw_dictionaries[indx + 1]
+            except IndexError as last_event_error: 
+                next = None
+
+            outcome =  = get_possession_outcome(curr, next)
+            looking_for_free_throws
+            offensive_team, result,
+        
+            if result is None:
+                pass
+            else:
+                result_outcome_dicts.append(result)
+
     return result_outcome_dicts
     
 #===============
@@ -195,10 +246,13 @@ for rawfile in input_files:
     # Get team names
     teamnames = get_teams_from_filename(rawfile)
     
-    # Get player names
+    # Read data
     with open(rawfile, "rb") as f:
         reader = csv.reader(f)
         raw_dictionaries = parse_raw_data_from_rows(reader)
+
+    # Get player names
+    unique_player_names = get_unique_player_names(teamnames, raw_dictionaries)
     
-    
-    #unique_player_names = reduce(set.union, raw_dictionaries)
+            if MAX_THREE_POINTS:
+                pass
