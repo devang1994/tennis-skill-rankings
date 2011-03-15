@@ -1,11 +1,13 @@
 #! /usr/bin/env python
 
 # Output file format is a series of MATLAB matrices in CSV format.
-# D_r.csv: Column vector
+# D_*_r.csv: Column vector of length N
 #   Each element is the value of Result for that particular observation -- either 0, 1, 2, or 3
+#   The name of the output file will depend on the name of the teams on offense and defense.
+#   For example, Detroit's offensive possessions against Cleveland would be D_r_DETCLE.csv
 #
 # D_C_*_offense.csv: N×12 matrix
-#   Each row corresponds to an observation from D_r.
+#   Each row corresponds to an observation from D_r (in the same row).
 #   Each row has 12 boolean values (1 or 0), and exactly five of them are set to "1". These five ones correspond to the five offensive players on the court during this possession.
 #   TODO: When we support multiple games, and mixed rosters, you'll need more than 12 here, but for now it's fine.
 #   The name of the output file will depend on the name of the team.
@@ -18,6 +20,8 @@
 # names.m: script
 #   This is a script that will populate a cell array named names_offense.
 #   This cell array will have one entry for each column of D_C_offense, and contains the name of the player corresponding to that column.
+#   For example,
+#     names_offsense{3} in matlab would be the name of the player in the third column on offense.
 #
 #   This is a script will also populate a cell array named names_defense.
 
@@ -81,11 +85,11 @@ def parse_raw_data_from_rows(rows_iterable):
 
     return output
 
-def get_unique_player_names(team_names, raw_dictionaries):
+def get_unique_player_names(team_names, cleaned_dictionaries):
     """Return the list of unique players on each team
     
     :param team_names: A tuple of the form (string1, string2) describing the order of teams
-    :param raw_dictionaries: A list of dictionaries corresponding to the rows of the raw data file
+    :param cleaned_dictionaries: A list of dictionaries output by remove_irrelevant_data()
     
     :rtype: a dictionary of the form {TEAMNAME: set([player_name, player_name, ...]), TEAMNAME: set([player_name, player_name, ...])}
     
@@ -93,12 +97,60 @@ def get_unique_player_names(team_names, raw_dictionaries):
     names = {}
     
     # Columns 0 through 4 are for the first team (away)
-    names{team_names[0]} = reduce(set.union, frozenset(d[:5]) for d in raw_dictionaries)
-    # Columns 5 through 9 are for the second team (home)s
-    names{team_names[1]} = reduce(set.union, frozenset(d[5:10]) for d in raw_dictionaries)
+    names{team_names[0]} = reduce(set.union, for d['away players'] in cleaned_dictionaries)
+    names{team_names[1]} = reduce(set.union, for d['home players'] in cleaned_dictionaries)
 
     return names
 
+def remove_irrelevant_data(d):
+    """Filter for relevant data only
+    
+    We should be left with 'etype' of:
+        turnover
+        free throw (result: made/missed, num, outof)
+        shot (result: made(points)/missed)
+    
+    :rtype: None if the data is irrelevant, otherwise the relevant portion of the data
+    
+    """
+
+    if d['etype'] == 'rebound':
+        return None
+        
+    if d['etype'] == 'sub':
+        return None
+    
+    if d['etype'] == 'violation':
+        return None
+    
+    if d['etype'] == 'timeout':
+        return None
+        
+    if d['etype'] == 'jump ball':
+        return None
+    
+    if d['etype'] == 'foul':
+        return None
+        
+    if d['etype'] == 'free throw' and d['type'] == 'technical':
+        return None
+        
+    # Configurable filters
+    assert(d['period'] in ['1', '2', '3', '4'])
+    if SKIP_SECOND_HALF and (d['period'] in ['3', '4'])
+        # Ignore garbage time, configure this in the Configuration section of this script
+        return None
+
+    return {'away players', frozenset([d['a1'], d['a2'], d['a3'], d['a4'], d['a5']])
+            'home players', frozenset([d['h1'], d['h2'], d['h3'], d['h4'], d['h5']])
+            'whose possession', d['team'], #This doesn't apply on fouls but we got rid of them.
+            'etype',  d['etype'],
+            'result', d['result'],
+            'points', d['points'],
+            'time',   d['time'],
+            'num',    d['num'],
+            'outof',  d['outof']}
+    
     
 def get_free_throw_outcome(d):
     """
@@ -129,23 +181,6 @@ def get_possession_outcome(d, d_next):
           
     
     """
-    assert(d['period'] in ['1', '2', '3', '4'])
-    
-    #============================================================
-    #   Events that have nothing to do with scoring (attempts)
-    #============================================================
-    
-    if d['team'] == 'OFF':
-        # Probably a jump-ball or something, but d_prev may not be valid here either
-        return None
-    
-    #==========================
-    #   Configurable filters
-    #==========================
-    
-    if SKIP_SECOND_HALF and (d['period'] in ['3', '4'])
-        # Ignore garbage time, configure this in the Configuration section of this script
-        return None
 
     #==========================
     #   Scoring and attempts
@@ -251,8 +286,11 @@ for rawfile in input_files:
         reader = csv.reader(f)
         raw_dictionaries = parse_raw_data_from_rows(reader)
 
+    # Remove irrelevant data
+    cleaned_dictionaries = [d for d in remove_irrelevant_data(raw_dictionaries) if not (d is None)]
+
     # Get player names
-    unique_player_names = get_unique_player_names(teamnames, raw_dictionaries)
+    unique_player_names = get_unique_player_names(teamnames, cleaned_dictionaries)
     
             if MAX_THREE_POINTS:
                 pass
