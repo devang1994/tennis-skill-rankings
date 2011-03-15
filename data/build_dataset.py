@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+ï»¿#! /usr/bin/env python
 
 # Output file format is a series of MATLAB matrices in CSV format.
 # D_*_r.csv: Column vector of length N
@@ -6,7 +6,7 @@
 #   The name of the output file will depend on the name of the teams on offense and defense.
 #   For example, Detroit's offensive possessions against Cleveland would be D_r_DETCLE.csv
 #
-# D_C_*_offense.csv: N×12 matrix
+# D_C_*_offense.csv: NÃ—12 matrix
 #   Each row corresponds to an observation from D_r (in the same row).
 #   Each row has 12 boolean values (1 or 0), and exactly five of them are set to "1". These five ones correspond to the five offensive players on the court during this possession.
 #   TODO: When we support multiple games, and mixed rosters, you'll need more than 12 here, but for now it's fine.
@@ -14,7 +14,7 @@
 #   For example, Detroit will be D_C_DET_offense.csv
 #
 #
-# D_C_*_defense.csv: N×12 matrix
+# D_C_*_defense.csv: NÃ—12 matrix
 #   Same as D_C_*_offense but for the defensive team.
 #
 # names.m: script
@@ -97,11 +97,11 @@ def get_unique_player_names(team_names, cleaned_dictionaries):
     """
     names = {}
     
-    names{'away'} = list(reduce(set.union, for d['away players'] in cleaned_dictionaries))
-    names{'home'} = list(reduce(set.union, for d['home players'] in cleaned_dictionaries))
+    names['away'] = list(reduce(set.union, (d['away players'] for d in cleaned_dictionaries)))
+    names['home'] = list(reduce(set.union, (d['home players'] for d in cleaned_dictionaries)))
     
-    names{team_names[0]} = names{'away'}
-    names{team_names[1]} = names{'home'}
+    names[team_names[0]] = names['away']
+    names[team_names[1]] = names['home']
 
     return names
 
@@ -140,19 +140,19 @@ def remove_irrelevant_data(d):
         
     # Configurable filters
     assert(d['period'] in ['1', '2', '3', '4'])
-    if SKIP_SECOND_HALF and (d['period'] in ['3', '4'])
+    if SKIP_SECOND_HALF and (d['period'] in ['3', '4']):
         # Ignore garbage time, configure this in the Configuration section of this script
         return None
 
-    return {'away players', frozenset([d['a1'], d['a2'], d['a3'], d['a4'], d['a5']])
-            'home players', frozenset([d['h1'], d['h2'], d['h3'], d['h4'], d['h5']])
-            'whose possession', d['team'], #This doesn't apply on fouls but we got rid of them.
-            'etype',  d['etype'],
-            'result', d['result'],
-            'points', d['points'],
-            'time',   d['time'],
-            'num',    d['num'],
-            'outof',  d['outof']}
+    return {'away players': frozenset([d['a1'], d['a2'], d['a3'], d['a4'], d['a5']]),
+            'home players': frozenset([d['h1'], d['h2'], d['h3'], d['h4'], d['h5']]),
+            'whose possession': d['team'], #This doesn't apply on fouls but we got rid of them.
+            'etype':  d['etype'],
+            'result': d['result'],
+            'points': d['points'],
+            'time':   d['time'],
+            'num':    d['num'],
+            'outof':  d['outof']}
 
 def combine_free_throws(raw_dictionaries):
     """Merge freethrows into one row"""
@@ -280,7 +280,7 @@ def get_possession_outcomes(raw_dictionaries):
 #===============
 def self_test():
     test_raw_csv = [["header a", "header b", "header c"], ["value 1", "value 2", "value 3"], ["value 4", "value 5", "value 6"]]
-    assert(_parse_raw_data_from_rows(test_raw_csv) == [{'header a': 'value 1', 'header b': 'value 2', 'header c': 'value 3'}, {'header a': 'value 4', 'header b': 'value 5', 'header c': 'value 6'}])
+    assert(parse_raw_data_from_rows(test_raw_csv) == [{'header a': 'value 1', 'header b': 'value 2', 'header c': 'value 3'}, {'header a': 'value 4', 'header b': 'value 5', 'header c': 'value 6'}])
     
 #==========
 #   Main
@@ -288,7 +288,8 @@ def self_test():
 
 if len(sys.argv) <= 1:
     self_test()
-    print( "Usage: python build_dataset.py file1 file2 ... > matlab_output.csv")
+    print( "Usage: python build_dataset.py file1 file2 ...")
+    sys.exit(0)
 
 # Get all the files specified on the command line
 input_files = itertools.chain.from_iterable(glob.glob(a) for a in sys.argv[1:])
@@ -342,7 +343,7 @@ for rawfile in input_files:
             f.write("names_defense{{{0}}} = {1};\n".format(indx, player_name))
     
     # We only output possessions where OFFENSIVE_TEAM is the attacking team
-    relevant_observations =  [row in almost_bayesian_network_observations if row['who'] == OFFENSIVE_TEAM]
+    relevant_observations = [row for row in almost_bayesian_network_observations if row['who'] == OFFENSIVE_TEAM]
     
     # Write #1
     R_fname = 'D_' + OFFENSIVE_TEAM + DEFENSIVE_TEAM + "_r.csv"
@@ -359,7 +360,7 @@ for rawfile in input_files:
     with open(C_offense_fname, "w") as f:
         for row in relevant_observations:
             players_on_court = row['home'] + row['away']
-            offensive_logicals = [str(int(p in players_on_court)) for p in offensive_players:
+            offensive_logicals = [str(int(p in players_on_court)) for p in offensive_players]
             f.write(','.join(offensive_logicals))
                 
     # Write #2b (defense)
@@ -367,5 +368,5 @@ for rawfile in input_files:
     with open(C_defense_fname, "w") as f:
         for row in relevant_observations:
             players_on_court = row['home'] + row['away']
-            defensive_logicals = [str(int(p in players_on_court)) for p in defensive_players:
+            defensive_logicals = [str(int(p in players_on_court)) for p in defensive_players]
             f.write(','.join(defensive_logicals))
