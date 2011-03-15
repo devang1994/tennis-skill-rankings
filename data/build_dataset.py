@@ -21,7 +21,7 @@
 #   This is a script that will populate a cell array named names_offense.
 #   This cell array will have one entry for each column of D_C_offense, and contains the name of the player corresponding to that column.
 #   For example,
-#     names_offsense{3} in matlab would be the name of the player in the third column on offense.
+#     names_offense{3} in matlab would be the name of the player in the third column on offense.
 #
 #   This is a script will also populate a cell array named names_defense.
 
@@ -91,14 +91,17 @@ def get_unique_player_names(team_names, cleaned_dictionaries):
     :param team_names: A tuple of the form (string1, string2) describing the order of teams
     :param cleaned_dictionaries: A list of dictionaries output by remove_irrelevant_data()
     
-    :rtype: a dictionary of the form {TEAMNAME: set([player_name, player_name, ...]), TEAMNAME: set([player_name, player_name, ...])}
+    :rtype: a dictionary of the form {TEAMNAME: [player_name, player_name, ...], ...}
+        where TEAMNAME can be the name of an actual team, or "home" or "away".
     
     """
     names = {}
     
-    # Columns 0 through 4 are for the first team (away)
-    names{team_names[0]} = reduce(set.union, for d['away players'] in cleaned_dictionaries)
-    names{team_names[1]} = reduce(set.union, for d['home players'] in cleaned_dictionaries)
+    names{'away'} = list(reduce(set.union, for d['away players'] in cleaned_dictionaries))
+    names{'home'} = list(reduce(set.union, for d['home players'] in cleaned_dictionaries))
+    
+    names{team_names[0]} = names{'away'}
+    names{team_names[1]} = names{'home'}
 
     return names
 
@@ -150,108 +153,125 @@ def remove_irrelevant_data(d):
             'time',   d['time'],
             'num',    d['num'],
             'outof',  d['outof']}
+
+def combine_free_throws(raw_dictionaries):
+    """Merge freethrows into one row"""
+    output = []
     
-    
-def get_free_throw_outcome(d):
-    """
-    
-    :rtype: 
-    
-    """
-    if d['etype'[] == free throw 
+    free_throw_counter = None
+    for d in raw_dictionaries:
+        # Is this a free throw?
+        if d['etype'] == 'free throw':
+            
+            # Should we assert that the d['time'] is the same the whole time?
+            #   "I don't think it matters" --Leland Chen
+            
+            # Start a new count?
+            if free_throw_counter is None:
+                free_throw_counter = 0
+
+            if d['result'] == 'made':
+                free_throw_counter += 1
+                
+            if d['num'] == d['outof']:
+                aggregate_d = d.copy()
+                aggregate_d['etype'] = 'all free throws'
+                aggregate_d['free throws made'] = free_throw_counter
+                output.append(aggregate_d) # APPEND HERE! CAUTION! Don't forget to read this line! It's important.
+                # Done, reset the counter
+                free_throw_counter = None
+                
+        else:
+            output.append(d) # Keep it the same
+
 
 def get_possession_outcome(d, d_next):
     """Return a dictionary with only the data relevant to the outcome of the possession
 
-    :rtype: a dictionary of the form {'offensive team': string, 'points scored': integer, 'fouled': boolean}
-          e.g. {'offensive team': 'CLE', 'points scored': 0, 'fouled': False}
+    :rtype: tuple with two elements.
+    
+        First element is a dictionary of the form {'who': string, 'R': integer}
+          e.g. {'who': 'CLE', 'R': 0}
                Cleveland turns over the ball
                
-          e.g. {'offensive team': 'CLE', 'points scored': 0, 'fouled': True}
-               Cleveland is fouled during a shot, goes to the free throw line
-               
-          e.g. {'offensive team': 'CLE', 'points scored': 2, 'fouled': False}
-               Cleveland scored 2 points, end of possession (no foul shots)
-          
-          e.g. {'offensive team': 'CLE', 'points scored': 2, 'fouled': False}
-               Cleveland scored 2 points, end of possession (no foul shots)
-          (team, score, True) --> start with `score` points, add more for subsequent foul shots
+          e.g. {'who': 'CLE', 'R': 2}
+               Cleveland scored 2 points, end of possession
            
           we also return None if this row of the data is irrelevant, e.g. it's not an end-of-possession event
           
+        Second element of the tuple is a boolean indicating whether we need to skip d_next (e.g. if it's a bonus free-throw and we already counted it)
     
     """
-
+    outcome = {'who': d['whose possession']}
     #==========================
     #   Scoring and attempts
     #==========================
 
     if d['etype'] == 'turnover':
         # Turnover
-        return (d['team'], 0, False)
+        outcome['R'] = 0
+        return (outcome, False)
 
     elif d['etype'] == 'shot' and d['result'] == 'missed':
         # Shot missed
-        if d_next['etype'] == 'rebound' and d_next['team'] != d['team']:
+        if d_next['team'] != d['team']:
             # Shot missed, End-of-possession on defensive rebound
-            return (d['team'], 0, False)
+            outcome['R'] = 0
+            return (outcome, False)
         else:
             # Shot missed, but nothing to indicate that the "possession" has ended so ignore this entry
-            return None
+            return (None, False)
 
     elif d['etype'] == 'shot' and d['result'] == 'made':
         # Shot made
-        scored = int(d['points'])
+        outcome['R'] = int(d['points'])
         
-        if d_next['etype'] == 'foul' && d_next['time'] == d['time']:
-            # Shot made, bonus free-throw
-            return (d['team'],scored, True)
+        if d_next['etype'] == 'all free throws' and d_next['time'] == d['time']:
+            # Shot made, bonus free-throw(s)
+            outcome['R'] += d_next['free throws made']
+            return (outcome, True)
         else:
-            # Shot made, no fouls
-            return (d['team'],scored, False)
+            return (outcome, False)
 
-    elif d['etype'] == 'foul':
+    elif d['etype'] == 'all free throws':
         # Fouled on the play
-        if d['type'] == 'defense 3 second' or d['type'] == 'technical':
-            return None # Don't care about silly fouls
-        else:
-            return (d['team'], 0, True)
+        outcome['R'] = d_next['free throws made']
+        return (outcome, False)
     else:
-        return None
+        assert False, "How come we didn't remove this? Why didn't you write code to handle this case? " + repr(d)
         
 def get_possession_outcomes(raw_dictionaries):
     """Call get_possession_outcome() on a loop
     
     :param raw_dictionaries: a list of event dictionaries
-    :rtype: a dictionary of the form {'TEAM1': list_of_event_dictionaries, 'TEAM2': list_of_event_dictionaries}
+    :rtype: a dictionary of the form {'away': set_of_players, 'home': set_of_players, 'R': integer, 'who': team_name}
     
     """
     result_outcome_dicts = []
-    looking_for_free_throws = False
     
+    please_skip = False
     for indx, curr in enumerate(raw_dictionaries):
-        if looking_for_free_throws:
-            # FREE THROWS MODE
-            looking_for_free_throws, bonus_points = get_free_throw_outcome(curr, next)
+        # Sometimes we want to skip a row...
+        if please_skip:
+            please_skip = False
+            continue
+    
+        # Peek ahead to iterate over the dictionary in pairs
+        try:
+            next = raw_dictionaries[indx + 1]
+        except IndexError as last_event_error: 
+            next = None
 
-            
+        # Process the row
+        outcome, please_skip = get_possession_outcome(curr, next)
+    
+        # Append the result
+        if result is None:
+            pass
         else:
-            # REGULAR MODE
-        
-            # Peek ahead to iterate over the dictionary in pairs
-            try:
-                next = raw_dictionaries[indx + 1]
-            except IndexError as last_event_error: 
-                next = None
-
-            outcome =  = get_possession_outcome(curr, next)
-            looking_for_free_throws
-            offensive_team, result,
-        
-            if result is None:
-                pass
-            else:
-                result_outcome_dicts.append(result)
+            outcome['away'] = curr['away players']
+            outcome['home'] = curr['home players']
+            result_outcome_dicts.append(outcome)
 
     return result_outcome_dicts
     
@@ -279,7 +299,7 @@ for rawfile in input_files:
     print("Reading " + rawfile + " ...")
     
     # Get team names
-    teamnames = get_teams_from_filename(rawfile)
+    input_teamnames = get_teams_from_filename(rawfile)
     
     # Read data
     with open(rawfile, "rb") as f:
@@ -288,9 +308,64 @@ for rawfile in input_files:
 
     # Remove irrelevant data
     cleaned_dictionaries = [d for d in remove_irrelevant_data(raw_dictionaries) if not (d is None)]
-
-    # Get player names
-    unique_player_names = get_unique_player_names(teamnames, cleaned_dictionaries)
     
-            if MAX_THREE_POINTS:
-                pass
+    # Combine free throws into single rows
+    events = combine_free_throws(cleaned_dictionaries)
+   
+    # Extract player names. The order of these names will determine the organization of the output CSV files.
+    unique_player_lists = get_unique_player_names(input_teamnames, cleaned_dictionaries)
+    
+    # Data has been collected into the form of Bayesian network observations.
+    # {'away': set_of_players, 'home': set_of_players, 'R': integer, 'who': team_name}
+    almost_bayesian_network_observations = get_possession_outcomes(events)
+    
+    # Now we just need to write it out.
+    # For each row/Bayesian-observation, we must output the following:
+    #   1. Result (integer)
+    #   2. Players on the court if OFFENSIVE_TEAM is attacking and DEFENSIVE_TEAM is defending
+    #   3. Player names
+
+    assert frozenset(input_teamnames) == frozenset([OFFENSIVE_TEAM, DEFENSIVE_TEAM]), "We only support one game at a time right now."
+    
+    offensive_players = unique_player_lists[OFFENSIVE_TEAM]
+    defensive_players = unique_player_lists[DEFENSIVE_TEAM]
+    
+    # Write #3
+    with open('names.m', "w") as f:
+        f.write("names_offense = {};\n")
+        f.write("names_defense = {};\n")
+        
+        for indx, player_name in offensive_players:
+            f.write("names_offense{{{0}}} = {1};\n".format(indx, player_name))
+        
+        for indx, player_name in defensive_players:
+            f.write("names_defense{{{0}}} = {1};\n".format(indx, player_name))
+    
+    # We only output possessions where OFFENSIVE_TEAM is the attacking team
+    relevant_observations =  [row in almost_bayesian_network_observations if row['who'] == OFFENSIVE_TEAM]
+    
+    # Write #1
+    R_fname = 'D_' + OFFENSIVE_TEAM + DEFENSIVE_TEAM + "_r.csv"
+    with open(R_fname, "w") as f:
+        # But only write rows where OFFENSIVE_TEAM is attacking.
+        for row in relevant_observations:
+            if MAX_THREE_POINTS and row['R'] > 3:
+                f.write('3\n')
+            else:
+                f.write(row['R'])
+                
+    # Write #2a (offense)
+    C_offense_fname = "D_C_" + OFFENSIVE_TEAM + "_offense.csv"
+    with open(C_offense_fname, "w") as f:
+        for row in relevant_observations:
+            players_on_court = row['home'] + row['away']
+            offensive_logicals = [str(int(p in players_on_court)) for p in offensive_players:
+            f.write(','.join(offensive_logicals))
+                
+    # Write #2b (defense)
+    C_defense_fname = "D_C_" + DEFENSIVE_TEAM + "_defense.csv"
+    with open(C_defense_fname, "w") as f:
+        for row in relevant_observations:
+            players_on_court = row['home'] + row['away']
+            defensive_logicals = [str(int(p in players_on_court)) for p in defensive_players:
+            f.write(','.join(defensive_logicals))
