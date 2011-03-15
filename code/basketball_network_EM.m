@@ -67,7 +67,7 @@ for j = 1:MAX_ITER
 	%============
 
 	%dbstop if naninf
-	E_D,
+	%E_D,
 
 	% Collection of sufficient statistics for epsilon
 	% We need four counts.
@@ -177,7 +177,7 @@ for j = 1:MAX_ITER
 		%Make the assignments
 		% soft_assignments unnormalized represents Pr{r|w}Pr{w|c}Pr{c} (but Pr{c} is uniform so we ignore it)
 		soft_assignments = pr_r_w' .* pr_w_c;
-		% Normalize
+		% Normalize (divide out Pr{r,c} = \sum_w Pr{r,w,c})
 		E_D(m,:) = soft_assignments' / sum(soft_assignments);
 
 		% The expected log-likelihood of this datapoint is Proposition 19.1 (page 860) in the text
