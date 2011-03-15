@@ -376,6 +376,6 @@ with open('loaddata.m', "w") as f:
     f.write("names_defense = {" + ','.join("'" + p + "'" for p in defensive_players) + "};\n")
     f.write("% This file came from {0}\n".format(rawfile))
     f.write("{0} = csvread('{0}.csv');\n".format(R_fname))
-    f.write("{0} = csvread('{0}.csv');\n".format(C_offense_fname))
-    f.write("{0} = csvread('{0}.csv');\n".format(C_defense_fname))
+    f.write("{0} = logical(csvread('{0}.csv'));\n".format(C_offense_fname))
+    f.write("{0} = logical(csvread('{0}.csv'));\n".format(C_defense_fname))
     f.write("dataset = [{0} {1} {2}];\n".format(R_fname,C_offense_fname,C_defense_fname))

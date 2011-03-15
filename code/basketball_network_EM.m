@@ -176,8 +176,9 @@ for j = 1:MAX_ITER
 			epsilon epsilon epsilon (1-3*epsilon)];
 
 		% soft_assignments unnormalized represents Pr{h|c}, so...
-		pr_o_h = R_schedule(:,dataset(:,1)); 
-		log_likelihood(j) = log_likelihood(j) + log(sum(soft_assignments.*pr_o_h));
+		pr_o_h = R_schedule(:,dataset(m,1) + 1); 
+		% have pr_o_h(k) be 1-d vector of length 8 that contains the probability of R in each soft-assignment 
+		log_likelihood(j) = log_likelihood(j) + log(sum(soft_assignments .* pr_o_h'));
 	end
 
 	%======================
