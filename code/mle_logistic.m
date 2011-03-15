@@ -24,8 +24,3 @@ for i=1:max_iters
 	theta = theta - H\grad;
 end
 
-end
-
-function a = sigmoid(x)
-a = 1./(1+exp(-x));
-end
