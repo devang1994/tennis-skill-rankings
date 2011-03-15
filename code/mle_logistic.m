@@ -5,7 +5,7 @@ function [theta,ll] = log_regression(X,Y)
 % with H = hessian, grad = gradient
 % returns theta as a column vector
 
-X = [ones(size(X,1),1) X];
+% X = [ones(size(X,1),1) X]; %no intercept
 m = size(X,1);
 n = size(X,2);
 theta = zeros(n,1);

@@ -56,13 +56,13 @@ for j = 1:MAX_ITER
 	% Probability calculations for each datapoint
 	for m=1:M
 		if gaussian
-			W(m,1) = normpdf(0,Theta(1,:)*[1; dataset(m,:)],s(1));
-			W(m,2) = normpdf(0,Theta(2,:)*[1; dataset(m,:)],s(2));
-			W(m,3) = normpdf(0,Theta(3,:)*[1; dataset(m,:)],s(3));
+			W(m,1) = normpdf(0,Theta(1,:)*dataset(m,2:end),s(1));
+			W(m,2) = normpdf(0,Theta(2,:)*dataset(m,2:end),s(2));
+			W(m,3) = normpdf(0,Theta(3,:)*dataset(m,2:end),s(3));
 		else
-			W(m,1) = sigmoid(Theta(1,:)*[1; dataset(m,:)]);
-			W(m,2) = sigmoid(Theta(2,:)*[1; dataset(m,:)]);
-			W(m,3) = sigmoid(Theta(3,:)*[1; dataset(m,:)]);
+			W(m,1) = sigmoid(Theta(1,:)*dataset(m,2:end));
+			W(m,2) = sigmoid(Theta(2,:)*dataset(m,2:end));
+			W(m,3) = sigmoid(Theta(3,:)*dataset(m,2:end));
 		end
 	end
 
