@@ -59,6 +59,51 @@ end
 for j = 1:MAX_ITER
 
 	%============
+	%   M-Step
+	%============
+
+	dbstop if naninf
+	E_D,
+
+	% Collection of sufficient statistics for epsilon
+	% We need four counts.
+	% M[r^3,w_3^1]:
+	%   dataset(:,1) == 3
+	%   E_D_schedule(:,3) == true
+	M_r3_w3 = sum(E_D(dataset(:,1) == 3, E_D_schedule(:,2)'));
+	% M[r^2,w_3^0,w_2^1]:
+	%   dataset(:,1) == 2
+	%   E_D_schedule(:,3) == false
+	%   E_D_schedule(:,2) == true
+	M_r2_l3_w2 = sum(E_D(dataset(:,1) == 2, E_D_schedule(:,2)' & ~E_D_schedule(:,3)'));
+	% M[r^1,w_3^0,w_2^0,w_1^1]:
+	%   dataset(:,1) == 1
+	%   E_D_schedule(:,3) == false
+	%   E_D_schedule(:,2) == false
+	%   E_D_schedule(:,1) == true
+	M_r2_l3_l2_w1 = sum(E_D(dataset(:,1) == 1, E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)'));
+	% M[r^1,w_3^0,w_2^0,w_1^0]:
+	%   dataset(:,1) == 1
+	%   E_D_schedule(:,3) == false
+	%   E_D_schedule(:,2) == false
+	%   E_D_schedule(:,1) == false
+	M_r2_l3_l2_l1 = sum(E_D(dataset(:,1) == 0, ~E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)'));
+
+	M_modelled = M_r3_w3 + M_r2_l3_w2 + M_r2_l3_l2_w1 + M_r2_l3_l2_l1;
+	M_noise = M - M_modelled;
+
+	% Calculation of log-likelihood
+	log_likelihood(j) = 0;
+	log_likelihood(j) = log_likelihood(j) + sum(log(W(:,1))) + sum(log(W(:,2))) + sum(log(W(:,3)));
+	log_likelihood(j) = log_likelihood(j) + sum(M_r)*log(1-3*epsilon) + M_noise*log(epsilon)
+
+	if norm(W-OldProb,'fro') < 10e-6
+		break;
+	end
+
+	OldProb = W;
+
+	%============
 	%   E-Step
 	%============
 
@@ -108,50 +153,4 @@ for j = 1:MAX_ITER
 		% Normalize
 		E_D(m,:) = soft_assignments' / sum(soft_assignments);
 	end
-
-	%============
-	%   M-Step
-	%============
-
-	dbstop if naninf
-	E_D,
-
-	% Collection of sufficient statistics for epsilon
-	% We need four counts.
-	% M[r^3,w_3^1]:
-	%   dataset(:,1) == 3
-	%   E_D_schedule(:,3) == true
-	M_r3_w3 = sum(E_D(dataset(:,1) == 3, E_D_schedule(:,2)'));
-	% M[r^2,w_3^0,w_2^1]:
-	%   dataset(:,1) == 2
-	%   E_D_schedule(:,3) == false
-	%   E_D_schedule(:,2) == true
-	M_r2_l3_w2 = sum(E_D(dataset(:,1) == 2, E_D_schedule(:,2)' & ~E_D_schedule(:,3)'));
-	% M[r^1,w_3^0,w_2^0,w_1^1]:
-	%   dataset(:,1) == 1
-	%   E_D_schedule(:,3) == false
-	%   E_D_schedule(:,2) == false
-	%   E_D_schedule(:,1) == true
-	M_r2_l3_l2_w1 = sum(E_D(dataset(:,1) == 1, E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)'));
-	% M[r^1,w_3^0,w_2^0,w_1^0]:
-	%   dataset(:,1) == 1
-	%   E_D_schedule(:,3) == false
-	%   E_D_schedule(:,2) == false
-	%   E_D_schedule(:,1) == false
-	M_r2_l3_l2_l1 = sum(E_D(dataset(:,1) == 0, ~E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)'));
-
-	M_modelled = M_r3_w3 + M_r2_l3_w2 + M_r2_l3_l2_w1 + M_r2_l3_l2_l1;
-	M_noise = M - M_modelled;
-
-	% Calculation of log-likelihood
-	log_likelihood(j) = 0;
-	log_likelihood(j) = log_likelihood(j) + sum(log(W(:,1))) + sum(log(W(:,2))) + sum(log(W(:,3)));
-	log_likelihood(j) = log_likelihood(j) + sum(M_r)*log(1-3*epsilon) + M_noise*log(epsilon)
-
-	if norm(W-OldProb,'fro') < 10e-6
-		break;
-	end
-
-	OldProb = W;
-
 end
