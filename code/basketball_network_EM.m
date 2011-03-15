@@ -10,7 +10,10 @@ function [Theta ll] = basketball_network_EM(dataset, MAX_ITER, gaussian)
 M = size(dataset,1);
 L = size(dataset,2); % (1+24*num_teams)
 W = zeros(M,3);
-Theta = size(3, L);
+%We have L=1 thetas because there is one theta for every player.
+%L is the number of columns in the dataset, but one of the columns is R
+Theta = nan(3, L-1); % This will be immediately overwritten, so we can catch errors by initializating to NaN
+
 %set initial values for W
 M_count = zeros(4);
 for m = 1:M
@@ -37,10 +40,13 @@ for j = 1:MAX_ITER
 	% Parameter estimation for W_i
 	for i = 1:3
 		if gaussian
-			[theta s(i)] = MLE_Gaussian(W(:,i),dataset(2:L,:));
+			[theta s(i)] = MLE_Gaussian(W(:,i),dataset(:,2:end));
 		else
-			[theta, ll] = mle_logistic (dataset(2:L,:),W(:,i));
+			[theta, ll] = mle_logistic (dataset(:,2:end),W(:,i));
 		end	
+		% theta is a column vector to start
+		size(Theta)
+		size(theta)
 		Theta(i,:) = theta';
 	end
 

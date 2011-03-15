@@ -3,6 +3,7 @@ function [theta,ll] = log_regression(X,Y)
 % rows of Y are estimated probabilities for W_i(x)
 % newton raphson: theta = theta - inv(H)* grad;
 % with H = hessian, grad = gradient
+% returns theta as a column vector
 
 X = [ones(size(X,1),1) X];
 m = size(X,1);
@@ -20,8 +21,9 @@ for i=1:max_iters
 		H = H - hxj*(1-hxj)*X(j,:)'*X(j,:);
 		ll(i) = ll(i) + Y(j)*log(hxj) + (1-Y(j))*log(1-hxj);
 	end
-	theta = theta - inv(H)*grad;
+	theta = theta - H\grad;
 end
+
 end
 
 function a = sigmoid(x)

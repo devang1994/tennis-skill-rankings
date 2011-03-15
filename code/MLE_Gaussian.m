@@ -31,7 +31,6 @@ sigma = 1;
 % solve A*Theta = B
 % then compute sigma according to eq. (17) in CS228-PA3 description
 
-sumW = sum(W);
 A = zeros(K+1,K+1);
 B = zeros(K+1,1);
 A(1,K+1) = 1;

@@ -3,6 +3,6 @@
 loaddata
 
 MAX_ITER = 500
-gaussian = false
 
-[Theta ll] = basketball_network_EM(dataset, MAX_ITER, gaussian)
+[Theta_BradleyTerry loglikelihood_BradleyTerry] = basketball_network_EM(dataset, MAX_ITER, false)
+[Theta_ThurstoneCaseV loglikelihood_ThurstoneCaseV] = basketball_network_EM(dataset, MAX_ITER, true)
