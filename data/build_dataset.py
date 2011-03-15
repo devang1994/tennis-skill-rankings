@@ -52,14 +52,14 @@ def get_teams_from_filename(filepath):
     Example
     >>> # `20061221.DETCLE.csv` lists Detroit first, and then Cleveland.
     >>> get_teams_from_filename('./rawdata/20061221.DETCLE.csv')
-    ('DET', 'CLE')
+    ('away': 'DET', 'home': 'CLE')
     >>>
     
-    :rtype: a tuple containing two strings
+    :rtype: dictionary containing two team names
     
     """
     both_teams_str = filepath.split('.')[-2]
-    return (both_teams_str[:3], both_teams_str[3:])
+    return {'away': both_teams_str[:3], 'home': both_teams_str[3:]}
 
 def parse_raw_data_from_rows(rows_iterable):
     """Parse a basic CSV file where the first row is a header and subsequent rows are data values
@@ -102,12 +102,12 @@ def get_unique_player_names(team_names, cleaned_dictionaries):
     names['away'] = list(reduce(frozenset.union, (d['away players'] for d in cleaned_dictionaries)))
     names['home'] = list(reduce(frozenset.union, (d['home players'] for d in cleaned_dictionaries)))
     
-    names[team_names[0]] = names['away']
-    names[team_names[1]] = names['home']
+    names[team_names['away']] = names['away']
+    names[team_names['home']] = names['home']
 
     return names
 
-def remove_irrelevant_data(d):
+def remove_irrelevant_data(team_names,d):
     """Filter for relevant data only
     
     We should be left with 'etype' of:
@@ -146,8 +146,13 @@ def remove_irrelevant_data(d):
         # Ignore garbage time, configure this in the Configuration section of this script
         return None
 
-    return {'away players': frozenset([d['a1'], d['a2'], d['a3'], d['a4'], d['a5']]),
-            'home players': frozenset([d['h1'], d['h2'], d['h3'], d['h4'], d['h5']]),
+    away_players = frozenset([d['a1'], d['a2'], d['a3'], d['a4'], d['a5']])
+    home_players = frozenset([d['h1'], d['h2'], d['h3'], d['h4'], d['h5']])
+    
+    return {'away players': away_players,
+            'home players': home_players,
+            team_names['away'] + ' players': away_players,
+            team_names['home'] + ' players': home_players,
             'whose possession': d['team'], #This doesn't apply on fouls but we got rid of them.
             'etype':  d['etype'],
             'result': d['result'],
@@ -310,7 +315,7 @@ with open(rawfile, "rb") as f:
     raw_dictionaries = parse_raw_data_from_rows(reader)
 
 # Remove irrelevant data
-cleaned_dictionaries = [remove_irrelevant_data(d) for d in raw_dictionaries]
+cleaned_dictionaries = [remove_irrelevant_data(input_teamnames,d) for d in raw_dictionaries]
 filtered_dictionaries = [d for d in cleaned_dictionaries if not (d is None)]
 
 # Combine free throws into single rows
@@ -329,7 +334,7 @@ almost_bayesian_network_observations = get_possession_outcomes(events)
 #   2. Players on the court if OFFENSIVE_TEAM is attacking and DEFENSIVE_TEAM is defending
 #   3. Player names
 
-assert frozenset(input_teamnames) == frozenset([OFFENSIVE_TEAM, DEFENSIVE_TEAM]), "We only support one game at a time right now."
+assert frozenset(input_teamnames.values()) == frozenset([OFFENSIVE_TEAM, DEFENSIVE_TEAM]), "We only support one game at a time right now."
 
 offensive_players = unique_player_lists[OFFENSIVE_TEAM]
 defensive_players = unique_player_lists[DEFENSIVE_TEAM]
