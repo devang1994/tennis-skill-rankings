@@ -26,7 +26,7 @@ M_r = nan(4,1);
 epsilon = .02; %arbitrary initialization
 M_r(4) = (1-3*epsilon) * sum(W(:,3));
 M_r(3) = (1-3*epsilon) * sum(W(:,2) .* (ones(M,1)-W(:,3)));
-M_r(2) = (1-3*epsilon) * sum(W(:,1) .* (ones(M,1)-W(:,3)) .* (ones(M,1)-W(:,2)))
+M_r(2) = (1-3*epsilon) * sum(W(:,1) .* (ones(M,1)-W(:,3)) .* (ones(M,1)-W(:,2)));
 M_r(1) = (1-3*epsilon) * sum((ones(M,1)-W(:,1)) .* (ones(M,1)-W(:,3)) .* (ones(M,1)-W(:,2)));
 M_noise = M - sum(M_r);
 
@@ -49,8 +49,6 @@ for j = 1:MAX_ITER
 	end
 
 	% Parameter estimation for epsilon (that was easy)
-	size(M_noise)
-	size(M)
 	epsilon = M_noise / (3*M);
 
 	% Probability calculations for each datapoint
