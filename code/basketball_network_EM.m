@@ -138,6 +138,21 @@ for j = 1:MAX_ITER
         %   Pr{D_r, C, W_1, W_2, W_3 | theta, epsilon}
 	%   = Pr{D_r|W_1, W_2, W_3,epsilon} * Pr{W_1|theta, C} * Pr{W_2|theta, C} * Pr{W_3|theta, C} * Pr{C}
 	for m=1:M
+		% Each datapoint has different R values (dataset(m,1)) so they will have different Pr{r}
+		R_schedule = [
+			(1-3*epsilon) epsilon epsilon epsilon;
+			epsilon (1-3*epsilon) epsilon epsilon;
+			epsilon epsilon (1-3*epsilon) epsilon;
+			epsilon epsilon (1-3*epsilon) epsilon;
+			epsilon epsilon epsilon (1-3*epsilon);
+			epsilon epsilon epsilon (1-3*epsilon);
+			epsilon epsilon epsilon (1-3*epsilon);
+			epsilon epsilon epsilon (1-3*epsilon)];
+
+		
+		% Compute Pr{r|w}
+		pr_r_w = R_schedule(:,dataset(m,1) + 1); 
+	
 		% Each datapoint has different C values (dataset(m,2:end)) so they will have different W1 W2 and W3
 		if gaussian
 			W1 = normpdf(0,Theta(1,:)*dataset(m,2:end)',1.0);
@@ -150,14 +165,18 @@ for j = 1:MAX_ITER
 		end
 
 		W_soft = [W1 W2 W3];
-		% Make the assignments
-		soft_assignments = nan(1,8); % initialize to NaN in order to catch typos
+		% Compute Pr{w|c}
+		pr_w_c = nan(1,8); % initialize to NaN in order to catch typos
 		for k=1:8
 			wins   = W_soft( E_D_schedule(k,:))     ;
 			losses = 1 - W_soft(~E_D_schedule(k,:)) ;
-			soft_assignments(k) = prod([wins, losses]);
+			pr_w_c(k) = prod([wins, losses]);
 
 		end
+		
+		%Make the assignments
+		% soft_assignments unnormalized represents Pr{r|w}Pr{w|c}Pr{c} (but Pr{c} is uniform so we ignore it)
+		soft_assignments = pr_r_w' .* pr_w_c;
 		% Normalize
 		E_D(m,:) = soft_assignments' / sum(soft_assignments);
 
@@ -165,20 +184,9 @@ for j = 1:MAX_ITER
 		% and together with O -- H -- C and Pr{C} uniform,
 		%   Pr{c,o,h) = Pr{o|h} Pr{h|c}
 		% we know log-likelihood of the datapoint
-		R_schedule = [
-			(1-3*epsilon) epsilon epsilon epsilon;
-			epsilon (1-3*epsilon) epsilon epsilon;
-			epsilon epsilon (1-3*epsilon) epsilon;
-			epsilon epsilon (1-3*epsilon) epsilon;
-			epsilon epsilon epsilon (1-3*epsilon);
-			epsilon epsilon epsilon (1-3*epsilon);
-			epsilon epsilon epsilon (1-3*epsilon);
-			epsilon epsilon epsilon (1-3*epsilon)];
-
-		% soft_assignments unnormalized represents Pr{h|c}, so...
-		pr_o_h = R_schedule(:,dataset(m,1) + 1); 
+		
 		% have pr_o_h(k) be 1-d vector of length 8 that contains the probability of R in each soft-assignment 
-		log_likelihood(j) = log_likelihood(j) + log(sum(soft_assignments .* pr_o_h'));
+		log_likelihood(j) = log_likelihood(j) + log(sum(soft_assignments));
 	end
 
 	%======================
