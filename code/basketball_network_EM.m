@@ -30,6 +30,7 @@ M_noise = M - sum(M_r);
 OldProb = W;
 if gaussian
 	s = zeros(3,1);
+end
 
 for j = 1:MAX_ITER
 
@@ -74,6 +75,7 @@ for j = 1:MAX_ITER
 
 	if norm(W-OldProb,'fro') < 10e-6
 		break;
+	end
 
 	OldProb = W;
 
