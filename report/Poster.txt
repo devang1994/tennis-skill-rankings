@@ -1,0 +1,27 @@
+Poster Very Rough Template
+
+= ABOUT 5 PAGES
+
+- TITLE HEADER: Project, Names.
+
+1) INTRO (Definition/Previous Work) 
+
+2) IMPLEMENTATION (Approach Taken: Max Likelihood, EM)
+
+3) PROPOSED NETWORK: newnetwork.pdf [landscape]
+
+4) RESULTS OF VARIOUS PLAYERS: OFF / DEF
+-COMPARISON USING CURRENT STATISTICS/PUBLIC PERCEPTION. EXAMPLE: NBA ALL-DEFENSIVE TEAM (1ST/2ND TEAMS). ALL-NBA TEAM (1ST/2ND/3RD). DEFENSIVE PLAYER OF THE YEAR. MVP. (Will not likely get this much data though).
+
+5) CONCLUSION
+
+***
+-compare to past papers. trueskill, elo.
+-epsilon outcome. smaller the better.
+-results: logistic vs gaussian.
+-point out surprising/obvious results.
+***
+
+Any other charts, graphs, plots??? 
+
+"Poster content and form - The poster should include the definition of the problem you have worked on and highlight where significant contributions were made (modeling, inference or learning); explain the approach taken in solving the problem, and mention previous work relied upon. Use large fonts for text within your poster and do not include too much of it, instead, include a lot of images to describe your results and analysis clearly."
