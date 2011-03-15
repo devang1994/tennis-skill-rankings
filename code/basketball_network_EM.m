@@ -7,6 +7,18 @@ function [Theta log_likelihood epsilon] = basketball_network_EM(dataset, MAX_ITE
 % doesn't deal with CLE O and DET D
 % gaussian is true if we use MLE_Gaussian, false for logistic
 
+% http://steelandsilicon.wordpress.com/2010/07/17/a-few-matlaboctave-notes/
+if size(ver('Octave'),1)
+    OctaveMode = 1;
+    more off
+else
+    OctaveMode = 0;
+end
+
+%======================
+%   Set up variables
+%======================
+
 M = size(dataset,1);
 L = size(dataset,2); % (1+24*num_teams)
 % Each of the datapoints receives partial assignments to the 8 possible combinations of W_1, W_2, and W_3
@@ -25,7 +37,7 @@ E_D_schedule = logical([
 
 %We have L=1 thetas because there is one theta for every player.
 %L is the number of columns in the dataset, but one of the columns is R
-Theta = nan(3, L-1); % This will be immediately overwritten, so we can catch errors by initializating to NaN
+Theta = zeros(3, L-1); % With no prior information, initialize to zeros.
 
 %========================
 %   Begin EM Algorithm
@@ -101,6 +113,9 @@ for j = 1:MAX_ITER
 	%============
 
 	for i = 1:3
+		% theta_init is a column vector
+		theta_init = Theta(i,:)';
+		
 		% For each datapoint (each row), compute:
 		%   How many of the eight soft-datapoints have W_i == false?
 		pr_wi_false = sum(E_D(:,~E_D_schedule(:,i)'),2);
@@ -119,8 +134,10 @@ for j = 1:MAX_ITER
 			X = [dataset(:,2:end); dataset(:,2:end)];
 			y = [zeros(M,1); ones(M,1)];
 			weights = [pr_wi_false; pr_wi_true];
-			theta_w_i = mle_logistic(X,y,weights);
-		end	
+			[theta_w_i itersneeded] = mle_logistic(X,y,weights,theta_init);
+			disp(['    MLE iterations: ' num2str(itersneeded)]);
+		end
+		
 		% theta_w_i is returned as a column vector
 		Theta(i,:) = theta_w_i';
 	end
@@ -137,18 +154,19 @@ for j = 1:MAX_ITER
 	% We need, for each possible datapoint,
         %   Pr{D_r, C, W_1, W_2, W_3 | theta, epsilon}
 	%   = Pr{D_r|W_1, W_2, W_3,epsilon} * Pr{W_1|theta, C} * Pr{W_2|theta, C} * Pr{W_3|theta, C} * Pr{C}
-	for m=1:M
-		% Each datapoint has different R values (dataset(m,1)) so they will have different Pr{r}
-		R_schedule = [
-			(1-3*epsilon) epsilon epsilon epsilon;
-			epsilon (1-3*epsilon) epsilon epsilon;
-			epsilon epsilon (1-3*epsilon) epsilon;
-			epsilon epsilon (1-3*epsilon) epsilon;
-			epsilon epsilon epsilon (1-3*epsilon);
-			epsilon epsilon epsilon (1-3*epsilon);
-			epsilon epsilon epsilon (1-3*epsilon);
-			epsilon epsilon epsilon (1-3*epsilon)];
+	
+	% Each datapoint has different R values (dataset(m,1)) so they will have different Pr{r}
+	R_schedule = [
+		(1-3*epsilon) epsilon epsilon epsilon;
+		epsilon (1-3*epsilon) epsilon epsilon;
+		epsilon epsilon (1-3*epsilon) epsilon;
+		epsilon epsilon (1-3*epsilon) epsilon;
+		epsilon epsilon epsilon (1-3*epsilon);
+		epsilon epsilon epsilon (1-3*epsilon);
+		epsilon epsilon epsilon (1-3*epsilon);
+		epsilon epsilon epsilon (1-3*epsilon)];
 
+	for m=1:M
 		
 		% Compute Pr{r|w}
 		pr_r_w = R_schedule(:,dataset(m,1) + 1); 
@@ -193,7 +211,14 @@ for j = 1:MAX_ITER
 	%   Stopping Critera
 	%======================
 
-	if (j > 1) && (abs(log_likelihood(j) - log_likelihood(j-1))/M < 10e-6) && (norm(E_D - OldProb,'fro') < 10e-6)
+	E_D_update_magnitude = max(max(abs(E_D - OldProb)));
+	
+	disp(['EM Iteration #' num2str(j) ' completed:  ll = ' num2str(log_likelihood(j)) ' ,  E_D changed by ' num2str(E_D_update_magnitude)]);
+	%if OctaveMode
+		fflush(stdout);
+	%end
+	
+	if (j > 1) && (abs(log_likelihood(j) - log_likelihood(j-1))/M < 10e-6) && (E_D_update_magnitude < 10e-6)
 		break;
 	end
 
