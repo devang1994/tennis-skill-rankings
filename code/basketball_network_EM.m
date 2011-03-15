@@ -37,11 +37,11 @@ for m = 1:M
 	M_count(dataset(m,1)+1) = M_count(dataset(m,1)+1) + 1;
 end
 W3_init = M_count(4)/M;
-W2_init = M_count(3)/M ./ W3_init;
-W1_init = M_count(2)/M ./ W2_init;
+W2_init = M_count(3)/M ./ (1 - W3_init);
+W1_init = M_count(2)/M ./ (1 - W2_init);
 
 % For each of the possible combinations of W, it has a joint probability
-W_init = [W3_init, W2_init, W1_init];
+W_init = [W1_init, W2_init, W3_init];
 for k=1:8
 	wins   = W_init( E_D_schedule(k,:))     ;
 	losses = 1 - W_init(~E_D_schedule(k,:)) ;
@@ -56,13 +56,17 @@ E_D = bsxfun(@rdivide,E_D,sum(E_D,2));
 
 OldProb = E_D;
 
+W_init,
+M_count,
+M,
+
 for j = 1:MAX_ITER
 
 	%============
 	%   M-Step
 	%============
 
-	dbstop if naninf
+	%dbstop if naninf
 	E_D,
 
 	% Collection of sufficient statistics for epsilon
