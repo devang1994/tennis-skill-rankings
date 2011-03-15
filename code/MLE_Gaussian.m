@@ -6,7 +6,7 @@
 %   Copyright (C) 2011, Stanford University
 %   contact: Huayan Wang, huayanw@cs.stanford.edu
 
-function [Theta sigma] = MLE_Gaussian(X, U)
+function [Theta] = MLE_Gaussian(X, U)
 
 % Note that Matlab index from 1, we can't write Theta(0). So Theta(K+1) is
 % essentially Theta(0) in PA3 description (and the text book).
