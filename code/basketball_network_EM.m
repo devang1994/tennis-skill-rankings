@@ -54,7 +54,7 @@ end
 % Normalize E_D. Each row should sum to 1.0
 E_D = bsxfun(@rdivide,E_D,sum(E_D,2));
 
-OldProb = W;
+OldProb = E_D;
 
 for j = 1:MAX_ITER
 
@@ -123,8 +123,9 @@ for j = 1:MAX_ITER
 	epsilon = M_noise / (3*M);
 
 	%=====================
-	%   Soft-Assignment
+	%   Soft-Assignment (and calculation of log_likelihood)
 	%=====================
+	log_likelihood(j) = 0;
 
 	% Probability calculations for each unique datapoint
 	% We need, for each possible datapoint,
@@ -153,22 +154,34 @@ for j = 1:MAX_ITER
 		end
 		% Normalize
 		E_D(m,:) = soft_assignments' / sum(soft_assignments);
+
+		% The expected log-likelihood of this datapoint is Proposition 19.1 (page 860) in the text
+		% and together with O -- H -- C and Pr{C} uniform,
+		%   Pr{c,o,h) = Pr{o|h} Pr{h|c}
+		% we know log-likelihood of the datapoint
+		R_schedule = [
+			(1-3*epsilon) epsilon epsilon epsilon;
+			epsilon (1-3*epsilon) epsilon epsilon;
+			epsilon epsilon (1-3*epsilon) epsilon;
+			epsilon epsilon (1-3*epsilon) epsilon;
+			epsilon epsilon epsilon (1-3*epsilon);
+			epsilon epsilon epsilon (1-3*epsilon);
+			epsilon epsilon epsilon (1-3*epsilon);
+			epsilon epsilon epsilon (1-3*epsilon)];
+
+		% soft_assignments unnormalized represents Pr{h|c}, so...
+		pr_o_h = R_schedule(:,dataset(:,1)); 
+		log_likelihood(j) = log_likelihood(j) + log(sum(soft_assignments.*pr_o_h));
 	end
 
-	%========================
-	%   Stopping Criterion
-	%========================
+	%======================
+	%   Stopping Critera
+	%======================
 
-	% Calculation of log-likelihood
-	log_likelihood(j) = 0;
-	log_likelihood(j) = log_likelihood(j) + sum(log(W(:,1))) + sum(log(W(:,2))) + sum(log(W(:,3)));
-	log_likelihood(j) = log_likelihood(j) + sum(M_r)*log(1-3*epsilon) + M_noise*log(epsilon)
-
-	if norm(W-OldProb,'fro') < 10e-6
+	if j > 1 && abs(log_likelihood(j) - log_likelihood(j-1))/M < 10e-6 && (E_D - OldProb,'fro') < 10e-6
 		break;
 	end
 
-	OldProb = W;
-
+	OldProb = E_D;
 
 end
