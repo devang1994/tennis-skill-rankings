@@ -123,22 +123,24 @@ for j = 1:MAX_ITER
 		pr_wi_true  = sum(E_D(:, E_D_schedule(:,i)'),2);
 
 		% Do weighted parameter estimation for W_i, go!
+		X = [dataset(:,2:end); dataset(:,2:end)];
+		y = [zeros(M,1); ones(M,1)];
+		weights = [pr_wi_false; pr_wi_true];
+		
 		if gaussian
 			% TODO: We don't need sigma in the same way we don't need an intercept term
 			%       What changes need to be made to MLE_Gaussian so that it uses a constant sigma?
 			% TODO: Reformulate the Gaussian to accept weighted datapoints
-			theta_w_i = MLE_Gaussian(W(:,i),dataset(:,2:end));
+			[theta_w_i itersneeded] = MLE_Gaussian(X,y,weights,theta_init);
 		else
 			% There are two soft-datapoints for each actual datapoint.
 			% i.e. one with W_i == true and one with W_i == false
-			X = [dataset(:,2:end); dataset(:,2:end)];
-			y = [zeros(M,1); ones(M,1)];
-			weights = [pr_wi_false; pr_wi_true];
 			[theta_w_i itersneeded] = mle_logistic(X,y,weights,theta_init);
-			disp(['    MLE iterations: ' num2str(itersneeded)]);
-			if any(isnan(theta_w_i))
-				dbstop if naninf
-			end
+		end
+		
+		disp(['    MLE iterations: ' num2str(itersneeded)]);
+		if any(isnan(theta_w_i))
+		  dbstop if naninf
 		end
 		
 		% theta_w_i is returned as a column vector
@@ -176,9 +178,9 @@ for j = 1:MAX_ITER
 	
 		% Each datapoint has different C values (dataset(m,2:end)) so they will have different W1 W2 and W3
 		if gaussian
-			W1 = normpdf(0,Theta(1,:)*dataset(m,2:end)',1.0);
-			W2 = normpdf(0,Theta(2,:)*dataset(m,2:end)',1.0);
-			W3 = normpdf(0,Theta(3,:)*dataset(m,2:end)',1.0);
+			W1 = normcdf(Theta(1,:)*dataset(m,2:end)',0,sqrt(10));
+			W2 = normcdf(Theta(2,:)*dataset(m,2:end)',0,sqrt(10));
+			W3 = normcdf(Theta(3,:)*dataset(m,2:end)',0,sqrt(10));
 		else
 			W1 = sigmoid(Theta(1,:)*dataset(m,2:end)');
 			W2 = sigmoid(Theta(2,:)*dataset(m,2:end)');
