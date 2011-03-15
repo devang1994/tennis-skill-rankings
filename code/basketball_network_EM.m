@@ -13,14 +13,15 @@ L = size(dataset,2); % (1+24*num_teams)
 % We will use the following legend.
 % E_D(m,k): The m-th datapoint's probability of being assigned combination k, where
 E_D = nan(M,8);
-E_D_schedule = [0 0 0; % k=1 --> Lose1, Lose2, Lose3
-                0 0 1; % k=2 --> Lose1, Lose2, Win3
-                0 1 0; % k=3 --> Lose1, Win2 , Lose3
-                0 1 1; %  .
-                1 0 0; %  .
-                1 0 1; %  .
-                1 1 0; % k=7 --> Win1, Win2, Lose3
-                1 1 1;]% k=8 --> Win1, Win2, Win3
+E_D_schedule = logical([
+	0 0 0; % k=1 --> Lose1, Lose2, Lose3
+        0 0 1; % k=2 --> Lose1, Lose2, Win3
+        0 1 0; % k=3 --> Lose1, Win2 , Lose3
+        0 1 1; %  .
+        1 0 0; %  .
+        1 0 1; %  .
+        1 1 0; % k=7 --> Win1, Win2, Lose3
+        1 1 1;])%k=8 --> Win1, Win2, Win3
 
 %We have L=1 thetas because there is one theta for every player.
 %L is the number of columns in the dataset, but one of the columns is R
@@ -31,11 +32,23 @@ M_count = zeros(4,1);
 for m = 1:M
 	M_count(dataset(m,1)+1) = M_count(dataset(m,1)+1) + 1;
 end
-W3_init = M_count(4)/M * ones(M,1);
-W2_init = M_count(3)/M * ones(M,1) ./ (ones(M,1) - W(:,3));
-W1_init = M_count(2)/M * ones(M,1) ./ (ones(M,1) - W(:,2));
-W0_init = 1 - W3_init - W2_init - W1_init;
+W3_init = M_count(4)/M;
+W2_init = M_count(3)/M ./ W3_init;
+W1_init = M_count(2)/M ./ W2_init;
 
+% For each of the possible combinations of W, it has a joint probability
+W_init = [W3_init, W2_init, W1_init];
+for k=1:8
+	wins   = W_init( E_D_schedule(k,:))     ;
+	losses = 1 - W_init(~E_D_schedule(k,:)) ;
+	joint_probability = prod([wins, losses]);
+
+	% Initialize all datapoints at once for this combination of W assignments
+        E_D(:,k) = joint_probability;
+end
+
+% Normalize E_D. Each row should sum to 1.0
+E_D = bsxfun(@rdivide,E_D,sum(E_D,2));
 
 
 OldProb = W;
@@ -72,18 +85,28 @@ for j = 1:MAX_ITER
         %   Pr{D_r, C, W_1, W_2, W_3 | theta, epsilon}
 	%   = Pr{D_r|W_1, W_2, W_3,epsilon} * Pr{W_1|theta, C} * Pr{W_2|theta, C} * Pr{W_3|theta, C} * Pr{C}
 	for m=1:M
-		for k=1:8
-			if gaussian
-				W1_true = normpdf(0,Theta(1,:)*dataset(m,2:end)',1.0);
-				W2_true = normpdf(0,Theta(2,:)*dataset(m,2:end)',1.0);
-				W3_true = normpdf(0,Theta(3,:)*dataset(m,2:end)',1.0);
-			else
-				W1_true = sigmoid(Theta(1,:)*dataset(m,2:end)');
-				W2_true = sigmoid(Theta(2,:)*dataset(m,2:end)');
-				W3_true = sigmoid(Theta(3,:)*dataset(m,2:end)');
-			end
-			E_D(m)
+		% Each datapoint has different C values (dataset(m,2:end)) so they will have different W1 W2 and W3
+		if gaussian
+			W1 = normpdf(0,Theta(1,:)*dataset(m,2:end)',1.0);
+			W2 = normpdf(0,Theta(2,:)*dataset(m,2:end)',1.0);
+			W3 = normpdf(0,Theta(3,:)*dataset(m,2:end)',1.0);
+		else
+			W1 = sigmoid(Theta(1,:)*dataset(m,2:end)');
+			W2 = sigmoid(Theta(2,:)*dataset(m,2:end)');
+			W3 = sigmoid(Theta(3,:)*dataset(m,2:end)');
 		end
+
+		W_soft = [W3 W2 W1];
+		% Make the assignments
+		soft_assignments = nan(1,8); % initialize to NaN in order to catch typos
+		for k=1:8
+			wins   = W_soft( E_D_schedule(k,:))     ;
+			losses = 1 - W_soft(~E_D_schedule(k,:)) ;
+			soft_assignments(k) = prod([wins, losses]);
+
+		end
+		% Normalize
+		E_D(m,:) = soft_assignments' / sum(soft_assignments);
 	end
 
 	%============
@@ -91,20 +114,34 @@ for j = 1:MAX_ITER
 	%============
 
 	dbstop if naninf
-	W,
-	M_r,
+	E_D,
 
-	% Collection of sufficient statistics for epsilon / R-evaluation
-	% note that we might need to check for numeric underflow
-	M_r(4) = (1-3*epsilon) * sum(W(:,3));
-	M_r(3) = (1-3*epsilon) * sum(W(:,2) .* (ones(M,1)-W(:,3)));
-	M_r(2) = (1-3*epsilon) * sum(W(:,1) .* (ones(M,1)-W(:,3)) .* (ones(M,1)-W(:,2)));
-	M_r(1) = (1-3*epsilon) * sum((ones(M,1)-W(:,1)) .* (ones(M,1)-W(:,3)) .* (ones(M,1)-W(:,2)));
+	% Collection of sufficient statistics for epsilon
+	% We need four counts.
+	% M[r^3,w_3^1]:
+	%   dataset(:,1) == 3
+	%   E_D_schedule(:,3) == true
+	M_r3_w3 = sum(E_D(dataset(:,1) == 3, E_D_schedule(:,2)'));
+	% M[r^2,w_3^0,w_2^1]:
+	%   dataset(:,1) == 2
+	%   E_D_schedule(:,3) == false
+	%   E_D_schedule(:,2) == true
+	M_r2_l3_w2 = sum(E_D(dataset(:,1) == 2, E_D_schedule(:,2)' & ~E_D_schedule(:,3)'));
+	% M[r^1,w_3^0,w_2^0,w_1^1]:
+	%   dataset(:,1) == 1
+	%   E_D_schedule(:,3) == false
+	%   E_D_schedule(:,2) == false
+	%   E_D_schedule(:,1) == true
+	M_r2_l3_l2_w1 = sum(E_D(dataset(:,1) == 1, E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)'));
+	% M[r^1,w_3^0,w_2^0,w_1^0]:
+	%   dataset(:,1) == 1
+	%   E_D_schedule(:,3) == false
+	%   E_D_schedule(:,2) == false
+	%   E_D_schedule(:,1) == false
+	M_r2_l3_l2_l1 = sum(E_D(dataset(:,1) == 0, ~E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)'));
 
-	M_r,
-	epsilon,
-
-	M_noise = M - sum(M_r);
+	M_modelled = M_r3_w3 + M_r2_l3_w2 + M_r2_l3_l2_w1 + M_r2_l3_l2_l1;
+	M_noise = M - M_modelled;
 
 	% Calculation of log-likelihood
 	log_likelihood(j) = 0;
