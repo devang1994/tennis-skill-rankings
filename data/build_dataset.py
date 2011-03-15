@@ -337,6 +337,7 @@ print("Writing names.m ...")
 with open('names.m', "w") as f:
     f.write("names_offense = {" + ','.join("'" + p + "'" for p in offensive_players) + "};\n")
     f.write("names_defense = {" + ','.join("'" + p + "'" for p in defensive_players) + "};\n")
+    f.write("% This file came from {0}\n".format(rawfile))
 
 # We only output possessions where OFFENSIVE_TEAM is the attacking team
 relevant_observations = [row for row in almost_bayesian_network_observations if row['who'] == OFFENSIVE_TEAM]
