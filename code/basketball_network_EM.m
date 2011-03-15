@@ -70,24 +70,24 @@ for j = 1:MAX_ITER
 	% M[r^3,w_3^1]:
 	%   dataset(:,1) == 3
 	%   E_D_schedule(:,3) == true
-	M_r3_w3 = sum(E_D(dataset(:,1) == 3, E_D_schedule(:,2)'));
+	M_r3_w3 = sum(sum(E_D(dataset(:,1) == 3, E_D_schedule(:,2)')));
 	% M[r^2,w_3^0,w_2^1]:
 	%   dataset(:,1) == 2
 	%   E_D_schedule(:,3) == false
 	%   E_D_schedule(:,2) == true
-	M_r2_l3_w2 = sum(E_D(dataset(:,1) == 2, E_D_schedule(:,2)' & ~E_D_schedule(:,3)'));
+	M_r2_l3_w2 = sum(sum(E_D(dataset(:,1) == 2, E_D_schedule(:,2)' & ~E_D_schedule(:,3)')));
 	% M[r^1,w_3^0,w_2^0,w_1^1]:
 	%   dataset(:,1) == 1
 	%   E_D_schedule(:,3) == false
 	%   E_D_schedule(:,2) == false
 	%   E_D_schedule(:,1) == true
-	M_r2_l3_l2_w1 = sum(E_D(dataset(:,1) == 1, E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)'));
+	M_r2_l3_l2_w1 = sum(sum(E_D(dataset(:,1) == 1, E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)')));
 	% M[r^1,w_3^0,w_2^0,w_1^0]:
 	%   dataset(:,1) == 1
 	%   E_D_schedule(:,3) == false
 	%   E_D_schedule(:,2) == false
 	%   E_D_schedule(:,1) == false
-	M_r2_l3_l2_l1 = sum(E_D(dataset(:,1) == 0, ~E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)'));
+	M_r2_l3_l2_l1 = sum(sum(E_D(dataset(:,1) == 0, ~E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)')));
 
 	M_modelled = M_r3_w3 + M_r2_l3_w2 + M_r2_l3_l2_w1 + M_r2_l3_l2_l1;
 	M_noise = M - M_modelled;
@@ -110,10 +110,12 @@ for j = 1:MAX_ITER
 			% TODO: Reformulate the Gaussian to accept weighted datapoints
 			theta_w_i = MLE_Gaussian(W(:,i),dataset(:,2:end));
 		else
+			% There are two soft-datapoints for each actual datapoint.
+			% i.e. one with W_i == true and one with W_i == false
 			X = [dataset(:,2:end); dataset(:,2:end)];
 			y = [zeros(M,1); ones(M,1)];
 			weights = [pr_wi_false; pr_wi_true];
-			theta_w_i = mle_logistic (dataset(:,2:end),y,W(:,i));
+			theta_w_i = mle_logistic(X,y,weights);
 		end	
 		% theta_w_i is returned as a column vector
 		Theta(i,:) = theta_w_i';
@@ -178,7 +180,7 @@ for j = 1:MAX_ITER
 	%   Stopping Critera
 	%======================
 
-	if j > 1 && abs(log_likelihood(j) - log_likelihood(j-1))/M < 10e-6 && (E_D - OldProb,'fro') < 10e-6
+	if (j > 1) && (abs(log_likelihood(j) - log_likelihood(j-1))/M < 10e-6) && (norm(E_D - OldProb,'fro') < 10e-6)
 		break;
 	end
 
