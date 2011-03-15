@@ -1,9 +1,10 @@
 % CS228 Final Project
 % Ryan Thompson, Joseph Huang, Leland Chen
 % thompsor@stanford.edu
-% Adapted from CS228 PA3 Winter 2011
-% Copyright (C) 2011, Stanford University
-% contact: Huayan Wang, huayanw@cs.stanford.edu
+% Adapted from:
+%   CS228 PA3 Winter 2011
+%   Copyright (C) 2011, Stanford University
+%   contact: Huayan Wang, huayanw@cs.stanford.edu
 
 function [Theta sigma] = MLE_Gaussian(X, U)
 

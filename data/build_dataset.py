@@ -17,13 +17,15 @@
 # D_C_*_defense.csv: N×12 matrix
 #   Same as D_C_*_offense but for the defensive team.
 #
-# names.m: script
-#   This is a script that will populate a cell array named names_offense.
+# loaddata.m: script
+#   This script will populate a cell array named names_offense.
 #   This cell array will have one entry for each column of D_C_offense, and contains the name of the player corresponding to that column.
 #   For example,
 #     names_offense{3} in matlab would be the name of the player in the third column on offense.
 #
-#   This is a script will also populate a cell array named names_defense.
+#   This script will also populate a cell array named names_defense.
+#
+#   This script will also load your data.
 
 
 import glob
@@ -332,20 +334,13 @@ assert frozenset(input_teamnames) == frozenset([OFFENSIVE_TEAM, DEFENSIVE_TEAM])
 offensive_players = unique_player_lists[OFFENSIVE_TEAM]
 defensive_players = unique_player_lists[DEFENSIVE_TEAM]
 
-# Write #3
-print("Writing names.m ...")
-with open('names.m', "w") as f:
-    f.write("names_offense = {" + ','.join("'" + p + "'" for p in offensive_players) + "};\n")
-    f.write("names_defense = {" + ','.join("'" + p + "'" for p in defensive_players) + "};\n")
-    f.write("% This file came from {0}\n".format(rawfile))
-
 # We only output possessions where OFFENSIVE_TEAM is the attacking team
 relevant_observations = [row for row in almost_bayesian_network_observations if row['who'] == OFFENSIVE_TEAM]
 
 # Write #1
-R_fname = 'D_' + OFFENSIVE_TEAM + DEFENSIVE_TEAM + "_r.csv"
+R_fname = 'D_' + OFFENSIVE_TEAM + DEFENSIVE_TEAM + "_r"
 print("Writing {0} ...".format(R_fname))
-with open(R_fname, "w") as f:
+with open(R_fname + ".csv", "w") as f:
     # But only write rows where OFFENSIVE_TEAM is attacking.
     for row in relevant_observations:
         if MAX_THREE_POINTS and row['R'] > 3:
@@ -355,9 +350,9 @@ with open(R_fname, "w") as f:
         f.write("\n")
             
 # Write #2a (offense)
-C_offense_fname = "D_C_" + OFFENSIVE_TEAM + "_offense.csv"
+C_offense_fname = "D_C_" + OFFENSIVE_TEAM + "_offense"
 print("Writing {0} ...".format(C_offense_fname))
-with open(C_offense_fname, "w") as f:
+with open(C_offense_fname + ".csv", "w") as f:
     for row in relevant_observations:
         players_on_court = row['home'] | row['away']
         offensive_logicals = [str(int(p in players_on_court)) for p in offensive_players]
@@ -365,11 +360,22 @@ with open(C_offense_fname, "w") as f:
         f.write("\n")
             
 # Write #2b (defense)
-C_defense_fname = "D_C_" + DEFENSIVE_TEAM + "_defense.csv"
+C_defense_fname = "D_C_" + DEFENSIVE_TEAM + "_defense"
 print("Writing {0} ...".format(C_defense_fname))
-with open(C_defense_fname, "w") as f:
+with open(C_defense_fname + ".csv", "w") as f:
     for row in relevant_observations:
         players_on_court = row['home'] | row['away']
         defensive_logicals = [str(int(p in players_on_court)) for p in defensive_players]
         f.write(','.join(defensive_logicals))
         f.write("\n")
+
+# Write #3
+print("Writing loaddata.m ...")
+with open('loaddata.m', "w") as f:
+    f.write("names_offense = {" + ','.join("'" + p + "'" for p in offensive_players) + "};\n")
+    f.write("names_defense = {" + ','.join("'" + p + "'" for p in defensive_players) + "};\n")
+    f.write("% This file came from {0}\n".format(rawfile))
+    f.write("{0} = csvread('{0}.csv');\n".format(R_fname))
+    f.write("{0} = csvread('{0}.csv');\n".format(C_offense_fname))
+    f.write("{0} = csvread('{0}.csv');\n".format(C_defense_fname))
+    f.write("dataset = [{0} {1} {2}];\n".format(R_fname,C_offense_fname,C_defense_fname))
