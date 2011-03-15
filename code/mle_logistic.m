@@ -22,7 +22,7 @@ for i=1:max_iters
 	end
 	theta = theta - inv(H)*grad;
 end
-end;
+end
 
 function a = sigmoid(x)
 a = 1./(1+exp(-x));
