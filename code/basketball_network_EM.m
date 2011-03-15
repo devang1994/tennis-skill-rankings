@@ -142,7 +142,7 @@ for j = 1:MAX_ITER
 			W3 = sigmoid(Theta(3,:)*dataset(m,2:end)');
 		end
 
-		W_soft = [W3 W2 W1];
+		W_soft = [W1 W2 W3];
 		% Make the assignments
 		soft_assignments = nan(1,8); % initialize to NaN in order to catch typos
 		for k=1:8
