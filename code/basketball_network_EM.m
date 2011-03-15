@@ -96,17 +96,27 @@ for j = 1:MAX_ITER
 	%   E-Step
 	%============
 
-	% Parameter estimation for W_i
 	for i = 1:3
+		% For each datapoint (each row), compute:
+		%   How many of the eight soft-datapoints have W_i == false?
+		pr_wi_false = sum(E_D(:,~E_D_schedule(:,i)'),2);
+		%   How many of the eight soft-datapoints have W_i == true?
+		pr_wi_true  = sum(E_D(:, E_D_schedule(:,i)'),2);
+
+		% Do weighted parameter estimation for W_i, go!
 		if gaussian
 			% TODO: We don't need sigma in the same way we don't need an intercept term
-			%       What changes need to be made to MLE_Gaussian?
-			theta = MLE_Gaussian(W(:,i),dataset(:,2:end));
+			%       What changes need to be made to MLE_Gaussian so that it uses a constant sigma?
+			% TODO: Reformulate the Gaussian to accept weighted datapoints
+			theta_w_i = MLE_Gaussian(W(:,i),dataset(:,2:end));
 		else
-			theta = mle_logistic (dataset(:,2:end),W(:,i));
+			X = [dataset(:,2:end); dataset(:,2:end)];
+			y = [zeros(M,1); ones(M,1)];
+			weights = [pr_wi_false; pr_wi_true];
+			theta_w_i = mle_logistic (dataset(:,2:end),y,W(:,i));
 		end	
-		% theta is a column vector to start
-		Theta(i,:) = theta';
+		% theta_w_i is returned as a column vector
+		Theta(i,:) = theta_w_i';
 	end
 
 	% Parameter estimation for epsilon (that was easy)
