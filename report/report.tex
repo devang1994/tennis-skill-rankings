@@ -57,13 +57,18 @@
 
 \section{Related Work}
 
+% TODO: complete this section
+
 Let's talk about~\cite{herbrich2007trueskilltm}~and~\cite{coulom2008whole} and then just follow the citations that those guys make to introduce the general challenges and state-of-the art.
+
+Talk about the history of ELO~\cite{elo1978rating} and Glicko~\cite{glickman1999parameter}, and the ongoing debate between logistic and gaussian (logit vs. probit).
 
 Basketball brings two key challenges to the field of Bayesian Skill estimation.
 \begin{itemize}
 \item Results are not binary Win/Lose outcomes.
 \item Results are influenced by the skill differential of more than two players.
 \end{itemize}
+
 
 
 % ==============================================================================
@@ -153,14 +158,20 @@ Note: The term ``opportunity'' is not intended in the typical basketball sense, 
 Each of the \emph{Win k} events has a CPD parameterized by $\vec \theta_k$ (whose values we will learn during training), which depends on the skills of the players.
 In the basic model of player skills, the skill of a five-man team is the sum of the skills of its players.
 
-For example, in a Bradley-Terry model, we might have:
+For example, the Bradley-Terry model corresponds to:
 \[
 \prb{\mathrm{Win}_k = \mathbf{True} \mid \mathrm{Skills} } = \frac{ A\left(\mathrm{Skills}\right) } { A\left(\mathrm{Skills}\right) + B\left(\mathrm{Skills}\right) }
 \]%
-Alternatively, in a Thurstone Case V model, we might have:
+Alternatively, the Thurstone Case V model corresponds to:
 \[
 \prb{\mathrm{Win}_k = \mathbf{True} \mid \mathrm{Skills} } = \Phi\left( A - B \right)
 \]%
+The logit (Bradley-Terry) and probit(Thurstone Case V) are the main Binary Response Models used throughout the history of the skill ranking literature~\cite{elo1978rating,glickman1999parameter,herbrich2007trueskilltm,coulom2008whole}.
+
+However, the power of this Bayesian Network construction is that any Binary Response Model can be plugged in modularly.
+One can easily compare the performance of Cauchy~\cite{franklinPolisciWiscEduMLELec07p4up}, Log-Log~and~Complementary Log-Log~\cite{long1997regression}, Scobit~\cite{nagler1994scobit}, etc. without changing the network or the core inference algorithm.
+%We will also explore common  from the statistics community to see how they compare.
+
 
 For notational convenience, we will write $W_k = w_k^1$ for $\mathrm{Win}_k = \mathbf{True}$, and $W_k = w_k^0$ when {\bf False}.
 
