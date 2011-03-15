@@ -27,7 +27,11 @@ E_D_schedule = logical([
 %L is the number of columns in the dataset, but one of the columns is R
 Theta = nan(3, L-1); % This will be immediately overwritten, so we can catch errors by initializating to NaN
 
-%Get initial values for E_D
+%========================
+%   Begin EM Algorithm
+%========================
+
+% Set initial values for E_D
 M_count = zeros(4,1);
 for m = 1:M
 	M_count(dataset(m,1)+1) = M_count(dataset(m,1)+1) + 1;
@@ -50,11 +54,7 @@ end
 % Normalize E_D. Each row should sum to 1.0
 E_D = bsxfun(@rdivide,E_D,sum(E_D,2));
 
-
 OldProb = W;
-if gaussian
-	s = zeros(3,1);
-end
 
 for j = 1:MAX_ITER
 
@@ -92,17 +92,6 @@ for j = 1:MAX_ITER
 	M_modelled = M_r3_w3 + M_r2_l3_w2 + M_r2_l3_l2_w1 + M_r2_l3_l2_l1;
 	M_noise = M - M_modelled;
 
-	% Calculation of log-likelihood
-	log_likelihood(j) = 0;
-	log_likelihood(j) = log_likelihood(j) + sum(log(W(:,1))) + sum(log(W(:,2))) + sum(log(W(:,3)));
-	log_likelihood(j) = log_likelihood(j) + sum(M_r)*log(1-3*epsilon) + M_noise*log(epsilon)
-
-	if norm(W-OldProb,'fro') < 10e-6
-		break;
-	end
-
-	OldProb = W;
-
 	%============
 	%   E-Step
 	%============
@@ -110,6 +99,8 @@ for j = 1:MAX_ITER
 	% Parameter estimation for W_i
 	for i = 1:3
 		if gaussian
+			% TODO: We don't need sigma in the same way we don't need an intercept term
+			%       What changes need to be made to MLE_Gaussian?
 			theta = MLE_Gaussian(W(:,i),dataset(:,2:end));
 		else
 			theta = mle_logistic (dataset(:,2:end),W(:,i));
@@ -119,7 +110,7 @@ for j = 1:MAX_ITER
 	end
 
 	% Parameter estimation for epsilon (that was easy)
-	epsilon = %M_noise / (3*M);
+	epsilon = M_noise / (3*M);
 
 	%=====================
 	%   Soft-Assignment
@@ -153,4 +144,21 @@ for j = 1:MAX_ITER
 		% Normalize
 		E_D(m,:) = soft_assignments' / sum(soft_assignments);
 	end
+
+	%========================
+	%   Stopping Criterion
+	%========================
+
+	% Calculation of log-likelihood
+	log_likelihood(j) = 0;
+	log_likelihood(j) = log_likelihood(j) + sum(log(W(:,1))) + sum(log(W(:,2))) + sum(log(W(:,3)));
+	log_likelihood(j) = log_likelihood(j) + sum(M_r)*log(1-3*epsilon) + M_noise*log(epsilon)
+
+	if norm(W-OldProb,'fro') < 10e-6
+		break;
+	end
+
+	OldProb = W;
+
+
 end
