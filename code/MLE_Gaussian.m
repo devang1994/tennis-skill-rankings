@@ -31,7 +31,6 @@ sigma = 1;
 % solve A*Theta = B
 % then compute sigma according to eq. (17) in CS228-PA3 description
 
-sumW = sum(W);
 A = zeros(K,K); %no intercept
 B = zeros(K,1); %no intercept
 C = zeros(K); %this is E[U(k)]

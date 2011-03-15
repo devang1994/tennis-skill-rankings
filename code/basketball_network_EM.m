@@ -15,14 +15,14 @@ W = zeros(M,3);
 Theta = nan(3, L-1); % This will be immediately overwritten, so we can catch errors by initializating to NaN
 
 %set initial values for W
-M_count = zeros(4);
+M_count = zeros(4,1);
 for m = 1:M
 	M_count(dataset(m,1)+1) = M_count(dataset(m,1)+1) + 1;
 end
 W(:,3) = M_count(4)/M * ones(M,1);
 W(:,2) = M_count(3)/M * ones(M,1) ./ (ones(M,1) - W(:,3));
 W(:,1) = M_count(2)/M * ones(M,1) ./ (ones(M,1) - W(:,2));
-M_r = zeros(4);
+M_r = nan(4,1);
 epsilon = .02; %arbitrary initialization
 M_r(4) = (1-3*epsilon) * sum(W(:,3));
 M_r(3) = (1-3*epsilon) * sum(W(:,2) .* (ones(M,1)-W(:,3)));
@@ -45,24 +45,24 @@ for j = 1:MAX_ITER
 			[theta, ll] = mle_logistic (dataset(:,2:end),W(:,i));
 		end	
 		% theta is a column vector to start
-		size(Theta)
-		size(theta)
 		Theta(i,:) = theta';
 	end
 
 	% Parameter estimation for epsilon (that was easy)
+	size(M_noise)
+	size(M)
 	epsilon = M_noise / (3*M);
 
 	% Probability calculations for each datapoint
 	for m=1:M
 		if gaussian
-			W(m,1) = normpdf(0,Theta(1,:)*dataset(m,2:end),s(1));
-			W(m,2) = normpdf(0,Theta(2,:)*dataset(m,2:end),s(2));
-			W(m,3) = normpdf(0,Theta(3,:)*dataset(m,2:end),s(3));
+			W(m,1) = normpdf(0,Theta(1,:)*dataset(m,2:end)',s(1));
+			W(m,2) = normpdf(0,Theta(2,:)*dataset(m,2:end)',s(2));
+			W(m,3) = normpdf(0,Theta(3,:)*dataset(m,2:end)',s(3));
 		else
-			W(m,1) = sigmoid(Theta(1,:)*dataset(m,2:end));
-			W(m,2) = sigmoid(Theta(2,:)*dataset(m,2:end));
-			W(m,3) = sigmoid(Theta(3,:)*dataset(m,2:end));
+			W(m,1) = sigmoid(Theta(1,:)*dataset(m,2:end)');
+			W(m,2) = sigmoid(Theta(2,:)*dataset(m,2:end)');
+			W(m,3) = sigmoid(Theta(3,:)*dataset(m,2:end)');
 		end
 	end
 
