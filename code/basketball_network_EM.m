@@ -37,9 +37,15 @@ end
 
 for j = 1:MAX_ITER
 
+	%============
+	%   E-Step
+	%============
+
 	% Parameter estimation for W_i
 	for i = 1:3
 		if gaussian
+			% Revision 3164906e1692 note:
+			% It looks like s is being set to zero here.
 			[theta s(i)] = MLE_Gaussian(W(:,i),dataset(:,2:end));
 		else
 			[theta, ll] = mle_logistic (dataset(:,2:end),W(:,i));
@@ -50,6 +56,10 @@ for j = 1:MAX_ITER
 
 	% Parameter estimation for epsilon (that was easy)
 	epsilon = M_noise / (3*M);
+
+	%=====================
+	%   Soft-Assignment
+	%=====================
 
 	% Probability calculations for each datapoint
 	for m=1:M
@@ -64,12 +74,24 @@ for j = 1:MAX_ITER
 		end
 	end
 
-	% Collection of significant statistics for epsilon / R-evaluation
+	%============
+	%   M-Step
+	%============
+
+	dbstop if naninf
+	W,
+	M_r,
+
+	% Collection of sufficient statistics for epsilon / R-evaluation
 	% note that we might need to check for numeric underflow
 	M_r(4) = (1-3*epsilon) * sum(W(:,3));
 	M_r(3) = (1-3*epsilon) * sum(W(:,2) .* (ones(M,1)-W(:,3)));
-	M_r(2) = (1-3*epsilon) * sum(W(:,1) .* (ones(M,1)-W(:,3)) .* (ones(M,1)-W(:,2)))
+	M_r(2) = (1-3*epsilon) * sum(W(:,1) .* (ones(M,1)-W(:,3)) .* (ones(M,1)-W(:,2)));
 	M_r(1) = (1-3*epsilon) * sum((ones(M,1)-W(:,1)) .* (ones(M,1)-W(:,3)) .* (ones(M,1)-W(:,2)));
+
+	M_r,
+	epsilon,
+
 	M_noise = M - sum(M_r);
 
 	% Calculation of log-likelihood
