@@ -34,7 +34,7 @@ for i=1:MAX_ITERS
 	H = zeros(n,n);
 	for j=1:p
 		hxj = sigmoid(X(j,:)*theta);
-		grad = grad + w(j) * X(j,:)'*(Y(j) - hxj);
+		grad = grad + w(j) * X(j,:)'*(y(j) - hxj);
 		H = H - w(j) * hxj*(1-hxj)*X(j,:)'*X(j,:);
 	%	ll(i) = ll(i) + Y(j)*log(hxj) + (1-Y(j))*log(1-hxj);
 	end
