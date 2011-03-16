@@ -1,0 +1,5 @@
+From the command line,
+createdata.sh.bat
+
+From Matlab/Octave
+run

@@ -107,7 +107,7 @@ def get_unique_player_names(team_names, cleaned_dictionaries):
 
     return names
 
-def remove_irrelevant_data(team_names,d):
+def remove_irrelevant_data(d):
     """Filter for relevant data only
     
     We should be left with 'etype' of:
@@ -151,8 +151,6 @@ def remove_irrelevant_data(team_names,d):
     
     return {'away players': away_players,
             'home players': home_players,
-            team_names['away'] + ' players': away_players,
-            team_names['home'] + ' players': home_players,
             'whose possession': d['team'], #This doesn't apply on fouls but we got rid of them.
             'etype':  d['etype'],
             'result': d['result'],
@@ -303,38 +301,47 @@ if len(sys.argv) <= 1:
     print( "Usage: python build_dataset.py <inputfile>")
     sys.exit(0)
 
-rawfile = sys.argv[1]
-print("Reading " + rawfile + " ...")
+# Get all the files specified on the command line
+input_files = itertools.chain.from_iterable(glob.glob(a) for a in sys.argv[1:])
 
-# Get team names
-input_teamnames = get_teams_from_filename(rawfile)
+for rawfile in input_files:
+    print("Reading " + rawfile + " ...")
+   
+    # Get team names
+    input_teamnames = get_teams_from_filename(rawfile)
+    assert frozenset(input_teamnames.values()) == frozenset([OFFENSIVE_TEAM, DEFENSIVE_TEAM]), "We only support one game at a time right now."
 
-# Read data
-with open(rawfile, "rb") as f:
-    reader = csv.reader(f)
-    raw_dictionaries = parse_raw_data_from_rows(reader)
+    # Read data
+    with open(rawfile, "rb") as f:
+        reader = csv.reader(f)
+        raw_dictionaries = parse_raw_data_from_rows(reader)
 
-# Remove irrelevant data
-cleaned_dictionaries = [remove_irrelevant_data(input_teamnames,d) for d in raw_dictionaries]
-filtered_dictionaries = [d for d in cleaned_dictionaries if not (d is None)]
+    # Remove irrelevant data
+    cleaned_dictionaries = [remove_irrelevant_data(d) for d in raw_dictionaries]
+    filtered_dictionaries = [d for d in cleaned_dictionaries if not (d is None)]
 
-# Combine free throws into single rows
-events = combine_free_throws(filtered_dictionaries)
+    # Combine free throws into single rows
+    events = combine_free_throws(filtered_dictionaries)
+
+    # Data has been collected into the form of Bayesian network observations.
+    # {'away': set_of_players, 'home': set_of_players, 'R': integer, 'who': team_name}
+    almost_bayesian_network_observations = get_possession_outcomes(events)
+
+    # Now we just need to write it out.
+    # For each row/Bayesian-observation, we must output the following:
+    #   1. Result (integer)
+    #   2. Players on the court if OFFENSIVE_TEAM is attacking and DEFENSIVE_TEAM is defending
+    #   3. Player names
+
+
 
 # Extract player names. The order of these names will determine the organization of the output CSV files.
 unique_player_lists = get_unique_player_names(input_teamnames,filtered_dictionaries)
 
-# Data has been collected into the form of Bayesian network observations.
-# {'away': set_of_players, 'home': set_of_players, 'R': integer, 'who': team_name}
-almost_bayesian_network_observations = get_possession_outcomes(events)
+#            team_names['away'] + ' players': away_players,
+#            team_names['home'] + ' players': home_players,
 
-# Now we just need to write it out.
-# For each row/Bayesian-observation, we must output the following:
-#   1. Result (integer)
-#   2. Players on the court if OFFENSIVE_TEAM is attacking and DEFENSIVE_TEAM is defending
-#   3. Player names
 
-assert frozenset(input_teamnames.values()) == frozenset([OFFENSIVE_TEAM, DEFENSIVE_TEAM]), "We only support one game at a time right now."
 
 offensive_players = unique_player_lists[OFFENSIVE_TEAM]
 defensive_players = unique_player_lists[DEFENSIVE_TEAM]
