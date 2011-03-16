@@ -1,7 +1,7 @@
 function display_output(names, theta, ll, epsilon, title, isgaussian)
-% names is a struct with fields:
-%   names.offense
-%   names.defense
+
+P = length(names);
+assert(size(theta,2) == P*2)
 
 if isgaussian
 	RESCALE_EFFECTIVE_SIGMA = 1;
@@ -13,9 +13,12 @@ end
 
 theta_scaled = theta * RESCALE_EFFECTIVE_SIGMA;
 
-% print in descending order (most scoring at the top, least scoring at the bottom)
-[skill2_offense skill2_offense_order] = sort(theta_scaled(2,1:length(names.offense)),'descend');
-[skill2_defense skill2_defense_order] = sort(theta_scaled(2,length(names.offense)+(1:length(names.defense))),'descend');
+
+% For sorting purposes only: Your total skill is "amount of scoring on offense" minus "amount of scoring on defense"
+skill2_totals = theta_scaled(2,1:P) - theta_scaled(2,(P+1):end);
+
+% print in descending order (best differential at the top, worst player at the bottom)
+[skill2 skill2_order] = sort(skill2_totals,'descend');
 
 
 disp('');
@@ -25,16 +28,10 @@ disp(title)
 disp(['after ' num2str(length(ll)) ' EM iterations log-likelihood = ' num2str(ll(end))])
 epsilon,
 disp('');
-disp('1pt			3pt		OFFENSIVE PLAYER');
-for indx_offense=1:length(names.offense)
-	n = skill2_offense_order(indx_offense);
-	disp([num2str(theta_scaled(:,n)') '		' names.offense{n}]);
-end
-disp('');
-disp('1pt			3pt		DEFENSIVE PLAYER');
-for indx_defense=1:length(names.defense)
-	n = skill2_defense_order(indx_defense);
-	disp([num2str(theta_scaled(:,length(names.offense)+n)') '		' names.defense{n}]);
+disp('1pt offense	3pt offense   1pt defense	3pt defense');
+for player_rank=1:P
+	n = skill2_order(player_rank);
+	disp([num2str([theta_scaled(:,n);theta_scaled(:,P+n)]','%1.2f\t') '    ' names{n}]);
 end
 
 RESCALE_EFFECTIVE_SIGMA,
