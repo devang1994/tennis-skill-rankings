@@ -44,7 +44,36 @@ epsilon_BradleyTerry =  0.064761
 -46.382     18.105   -0.60163           Shannon Brown
 115.61    -12.477    -74.877            Larry Hughes
 
+===========================================================
+Thurstone Case V (probit):
+ epsilon_ThurstoneCaseV =  0.0659
 
+1pt                     3pt             OFFENSIVE PLAYER
+-28.071    -0.980415      24.6055               Dale Davis
+-20.234    -0.241588     -37.9873               Will Blalock
+-3.8214     -0.6341      1.7715         Chris Webber
+-13.117      5.39332      41.4546               Ronald Murray
+27.5331      -12.413      -6.7364               Carlos Delfino
+21.3924     0.597637     -24.0301               Jason Maxiell
+9.8615     0.24159      -1.612          Antonio McDyess
+0.15644      5.5191     -2.1589         Richard Hamilton
+17.5442     0.836051      31.7361               Nazr Mohammed
+28.9461      -11.161      -12.038               Tayshaun Prince
+-2.27792      4.98283      33.0379              Lindsey Hunter
+9.1978     -1.3519     -3.0924          Rasheed Wallace
+-0.442723      7.50279      12.3487             Chauncey Billups
+1pt                     3pt             DEFENSIVE PLAYER
+29.5102     -11.0167     -19.5846               Daniel Gibson
+-0.156438      10.9145     -21.3855             Drew Gooden
+-4.59335     -10.9824      6.62802              Eric Snow
+-3.90998     -11.0471     0.183462              Sasha Pavlovic
+4.45007     -8.36696     -17.8697               Damon Jones
+0.211573      11.0231      12.5984              Anderson Varejao
+-9.13697     -9.04214      52.7269              LeBron James
+2.07084      12.3856      19.2177               Donyell Marshall
+-21.2467      10.7453      25.3918              Zydrunas Ilgauskas
+-25.9455      15.5593    -0.183462              Shannon Brown
+56.8223     -10.3216     -16.5842               Larry Hughes
 
 
 
