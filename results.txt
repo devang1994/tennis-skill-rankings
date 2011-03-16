@@ -8,76 +8,82 @@ M_count =
     12
     91
     13
+M_count =
 
-EM Iteration #152 completed:  ll = -199.1 ,  E_D changed by 9.8884e-006
+   111
+    12
+    91
+    13
+
 
 
 ===========================================================
-Bradley-Terry:
-epsilon_BradleyTerry =  0.064761
+Bradley-Terry (logit):
+after 152 EM iterations log-likelihood = -199.1
+epsilon =  0.064761
 
 1pt                     3pt             OFFENSIVE PLAYER
--62.19   -0.69957     56.834            Dale Davis
--53.601      5.099    -84.903           Will Blalock
--16.364   -0.54468    0.94685           Chris Webber
--30.011     8.0533     87.163           Ronald Murray
-46.179    -19.754     -1.287            Carlos Delfino
-43.089    0.11161    -81.621            Jason Maxiell
-13.386   -0.11161    -24.006            Antonio McDyess
--1.2811     8.1685    -23.871           Richard Hamilton
-38.213    0.21103     74.262            Nazr Mohammed
-52.808    -19.123     -26.62            Tayshaun Prince
--0.67459     7.9049     60.481          Lindsey Hunter
-14.021   -0.92432    -2.4384            Rasheed Wallace
-0.67459     9.1375     2.5143           Chauncey Billups
+-8.5586     5.9385    -5.0854           Chauncey Billups
+-9.7422     5.3827     -20.29           Richard Hamilton
+-26.284     5.3166     43.632           Ronald Murray
+-9.3874     5.2314      28.26           Lindsey Hunter
+-39.681     3.6221    -55.324           Will Blalock
+13.018    0.81773     36.262            Nazr Mohammed
+15.624    0.76071    -53.527            Jason Maxiell
+-1.3108    0.63268    -20.384           Antonio McDyess
+-18.298    0.38428    -5.9554           Chris Webber
+-44.622    0.29544     26.195           Dale Davis
+-0.97227    0.16653    -7.8971          Rasheed Wallace
+21.307    -10.271    -21.859            Tayshaun Prince
+17.52    -10.633    -7.2127             Carlos Delfino
 
 1pt                     3pt             DEFENSIVE PLAYER
-57.755    -12.856    -78.817            Daniel Gibson
-6.7501     13.868    -74.303            Drew Gooden
--29.622    -12.833     28.289           Eric Snow
--29.916    -12.877    0.60163           Sasha Pavlovic
--0.78538    -11.483    -50.344          Damon Jones
-6.9548     13.913     31.199            Anderson Varejao
--22.742    -11.806     138.28           LeBron James
-7.2421     14.624      33.39            Donyell Marshall
--51.898     13.766     61.796           Zydrunas Ilgauskas
--46.382     18.105   -0.60163           Shannon Brown
-115.61    -12.477    -74.877            Larry Hughes
+-35.641     11.078    -6.8355           Shannon Brown
+-4.8464     9.0846     12.711           Donyell Marshall
+-5.0232     8.6767     11.454           Anderson Varejao
+-5.1406     8.6507    -49.343           Drew Gooden
+-38.568     8.5922     29.074           Zydrunas Ilgauskas
+-9.3984    -5.8864    -35.554           Damon Jones
+-22.027    -6.0718     73.229           LeBron James
+57.037    -6.4567    -49.649            Larry Hughes
+-25.815    -6.6612     9.8056           Eric Snow
+24.025    -6.6741    -51.863            Daniel Gibson
+-25.972    -6.6863    -6.1454           Sasha Pavlovic
+RESCALE_EFFECTIVE_SIGMA =  0.57357
+
 
 ===========================================================
 Thurstone Case V (Hessian probit):
- epsilon_ThurstoneCaseV =  0.0659
+after 108 EM iterations log-likelihood = -199.36
+epsilon =  0.065726
 
 1pt                     3pt             OFFENSIVE PLAYER
--28.071    -0.980415      24.6055               Dale Davis
--20.234    -0.241588     -37.9873               Will Blalock
--3.8214     -0.6341      1.7715         Chris Webber
--13.117      5.39332      41.4546               Ronald Murray
-27.5331      -12.413      -6.7364               Carlos Delfino
-21.3924     0.597637     -24.0301               Jason Maxiell
-9.8615     0.24159      -1.612          Antonio McDyess
-0.15644      5.5191     -2.1589         Richard Hamilton
-17.5442     0.836051      31.7361               Nazr Mohammed
-28.9461      -11.161      -12.038               Tayshaun Prince
--2.27792      4.98283      33.0379              Lindsey Hunter
-9.1978     -1.3519     -3.0924          Rasheed Wallace
--0.442723      7.50279      12.3487             Chauncey Billups
+-11.801     9.1082    -5.9143           Chauncey Billups
+-13.13     7.1247    -24.804            Richard Hamilton
+-33.656     6.9986     61.634           Ronald Murray
+-15.573     6.5869     38.856           Lindsey Hunter
+17.806     1.6305     46.782            Nazr Mohammed
+20.27     1.3776    -72.642             Jason Maxiell
+-50.426     1.3608    -79.206           Will Blalock
+-1.4102     1.0174     -26.36           Antonio McDyess
+-24.017    0.14546    -7.8625           Chris Webber
+-59.73   -0.19809     39.174            Dale Davis
+-0.97882   -0.57425    -12.886          Rasheed Wallace
+26.804    -12.415    -30.847            Tayshaun Prince
+25.69    -13.666    -10.415             Carlos Delfino
+
 1pt                     3pt             DEFENSIVE PLAYER
-29.5102     -11.0167     -19.5846               Daniel Gibson
--0.156438      10.9145     -21.3855             Drew Gooden
--4.59335     -10.9824      6.62802              Eric Snow
--3.90998     -11.0471     0.183462              Sasha Pavlovic
-4.45007     -8.36696     -17.8697               Damon Jones
-0.211573      11.0231      12.5984              Anderson Varejao
--9.13697     -9.04214      52.7269              LeBron James
-2.07084      12.3856      19.2177               Donyell Marshall
--21.2467      10.7453      25.3918              Zydrunas Ilgauskas
--25.9455      15.5593    -0.183462              Shannon Brown
-56.8223     -10.3216     -16.5842               Larry Hughes
-
-
-
-
+-49.383     15.999    -7.5504           Shannon Brown
+-9.1259     13.034     14.883           Donyell Marshall
+-10.794     11.672     8.4529           Anderson Varejao
+-11.149     11.564    -68.929           Drew Gooden
+-53.423     11.393       35.3           Zydrunas Ilgauskas
+-12.184    -7.4342    -44.607           Damon Jones
+-28.334    -8.1078     99.383           LeBron James
+78.518    -9.3883    -62.879            Larry Hughes
+-29.577    -10.046     13.478           Eric Snow
+34.403    -10.081    -65.019            Daniel Gibson
+-29.102    -10.111    -6.9995           Sasha Pavlovic
 
 
 
@@ -91,96 +97,73 @@ DET on offense
 CLE on defense
 20070204 only
 
+
+
 M_count =
 
    19
     3
    16
     5
-    
-EM Iteration #82 completed:  ll = -32.017764 ,  E_D changed by 9.6068249e-006
+
+
 
 ===========================================================
 Bradley-Terry (logit):
-epsilon_BradleyTerry =  0.085707
+after 82 EM iterations log-likelihood = -32.018
+epsilon =  0.085707
 
 1pt                     3pt             OFFENSIVE PLAYER
--0.48888     -19.46    -48.506          Tayshaun Prince
-0.57943     13.616     48.537           Lindsey Hunter
-0.019256    -23.274    -22.592          Chris Webber
-0.032476    0.38165     15.701          Richard Hamilton
--0.30616    -42.477    -47.052          Carlos Delfino
--0.019256     11.438    -6.0898         Jason Maxiell
--5.9057    -5.4601    -3.5202           Rasheed Wallace
-5.9949   -0.38165     3.5532            Antonio McDyess
-1.2767     2.1328     28.454            Dale Davis
--0.73641     34.258     31.645          Chauncey Billups
+-1.9239     38.126     31.895           Chauncey Billups
+-0.60903     17.421     48.761          Lindsey Hunter
+-1.2049     15.353    -5.8356           Jason Maxiell
+0.087787     6.0142     28.703          Dale Davis
+-1.156     4.2619     15.953            Richard Hamilton
+4.8062     3.4926      3.802            Antonio McDyess
+-7.0947    -1.6219    -3.2713           Rasheed Wallace
+-1.6787    -15.539    -48.268           Tayshaun Prince
+-1.1696    -19.496    -22.335           Chris Webber
+-1.4946    -38.644    -46.789           Carlos Delfino
 
 1pt                     3pt             DEFENSIVE PLAYER
-10.606     17.848      30.84            Daniel Gibson
-8.4681    -12.277    -2.5247            Drew Gooden
--5.6836     11.607     4.3245           Eric Snow
-5.4994    -16.473    -21.869            Damon Jones
--8.378      6.428     2.5247            Anderson Varejao
--5.4095     10.622     21.882           LeBron James
-1.4814     18.319     27.403            Donyell Marshall
--1.392    -24.166    -27.374            Zydrunas Ilgauskas
--10.517    -23.693    -30.836           Sasha Pavlovic
-5.7723    -17.453    -4.3048            Larry Hughes
-EFFECTIVE_SIGMA =  0.57357
+0.29154       22.2     27.648           Donyell Marshall
+9.4145     21.729     31.101            Daniel Gibson
+-6.8729     15.482     4.5812           Eric Snow
+-6.5972      14.48     22.139           LeBron James
+-9.5694      10.29     2.7885           Anderson Varejao
+7.2817    -8.4187     -2.261            Drew Gooden
+4.3085    -12.616    -21.605            Damon Jones
+4.585    -13.617    -4.0454             Larry Hughes
+-11.703    -19.861    -30.565           Sasha Pavlovic
+-2.5799    -20.334     -27.12           Zydrunas Ilgauskas
+RESCALE_EFFECTIVE_SIGMA =  0.57357
+
 
 ===========================================================
-
 Thurstone Case V (Hessian probit):
-epsilon_ThurstoneCaseV =  0.088388
+after 68 EM iterations log-likelihood = -32.012
+epsilon =  0.085653
 
 1pt                     3pt             OFFENSIVE PLAYER
--0.3668    -11.021    -15.765           Tayshaun Prince
-0.81386     6.0102     15.765           Lindsey Hunter
--0.26105    -18.383    -8.1062          Chris Webber
--0.65471   -0.38122     5.1957          Richard Hamilton
-0.41455    -27.816    -14.537           Carlos Delfino
-0.17789     4.6165    -2.6578           Jason Maxiell
--7.1953    -5.3923   -0.34714           Rasheed Wallace
-7.6423    0.38122    0.34714            Antonio McDyess
-1.8424     5.4624     10.947            Dale Davis
--0.17789     21.468     9.1584          Chauncey Billups
+-1.779     51.596     37.259            Chauncey Billups
+-1.1138     17.888    -8.8979           Jason Maxiell
+-0.87012     17.079     60.499          Lindsey Hunter
+6.7377     12.081     3.4708            Antonio McDyess
+0.24828     12.061     36.603           Dale Davis
+-2.2146     6.2991     19.102           Richard Hamilton
+-9.2827    -9.4249    -3.3258           Rasheed Wallace
+-1.6749    -14.423    -60.353           Tayshaun Prince
+-1.6795    -27.293     -27.56           Chris Webber
+-1.0963    -52.583    -56.071           Carlos Delfino
 
 1pt                     3pt             DEFENSIVE PLAYER
-10.849     8.4003     10.266            Daniel Gibson
-9.3707    -9.2108   -0.75246            Drew Gooden
--6.9569     5.5325     1.6342           Eric Snow
-6.6008    -10.691    -8.7948            Damon Jones
--8.9237     4.1997    0.75246           Anderson Varejao
--6.1538     5.6797     8.7948           LeBron James
-3.2639     10.046     10.257            Donyell Marshall
--2.8168    -15.057    -10.257           Zydrunas Ilgauskas
--10.402    -13.411    -10.266           Sasha Pavlovic
-7.4039    -10.544    -1.6342            Larry Hughes
-===========================================================
-Thurstone Case V (steepest descent probit):
- epsilon_ThurstoneCaseV =  0.0770
-
-1pt                     3pt             OFFENSIVE PLAYER
-0.142885       7.2343     -11.9695      Tayshaun Prince
--1.1367     0.54138      8.9825         Lindsey Hunter
--0.82623     -2.7391   -0.024644        Chris Webber
--1.2631    -0.54138    -0.78867         Richard Hamilton
--0.14289      -8.342     -3.7026        Carlos Delfino
--0.566728      18.8825     -11.5175     Jason Maxiell
--0.64409     -0.9686     -3.0116        Rasheed Wallace
--0.34976      8.7443    0.024644        Antonio McDyess
-1.0143     -4.7194      8.6939          Dale Davis
--1.1969      20.7863     -1.62139       Chauncey Billups
-
-1pt                     3pt             DEFENSIVE PLAYER
--4.2648     -5.0111      2.5936         Daniel Gibson
--2.3597      9.3181      4.0812         Drew Gooden
-1.6836     -2.5951      7.7849          Eric Snow
-1.1442       8.733      7.3839          Damon Jones
-5.8142     -2.5001    -0.53946          Anderson Varejao
-2.3103      -1.915     -3.8421          LeBron James
-1.737      -6.568     0.95496           Donyell Marshall
-1.71745      13.3859      2.58683       Zydrunas Ilgauskas
-7.71925       11.829     0.948158       Sasha Pavlovic
-1.7709      9.4131     -4.2431          Larry Hughes
+1.1471      23.86     34.844            Donyell Marshall
+10.763     22.249     37.905            Daniel Gibson
+-8.7613     14.547     5.9936           Eric Snow
+-11.187     13.607     4.1426           Anderson Varejao
+-8.3451     13.572     29.603           LeBron James
+5.8001    -10.916    -29.458            Damon Jones
+8.6422    -10.951    -3.9976            Drew Gooden
+6.2164    -11.891    -5.8487            Larry Hughes
+-13.308    -19.593     -37.76           Sasha Pavlovic
+-3.6921    -21.204    -34.699           Zydrunas Ilgauskas
