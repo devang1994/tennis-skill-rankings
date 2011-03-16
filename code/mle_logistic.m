@@ -21,7 +21,6 @@ function [theta,i] = mle_logistic(X,y,w,theta_init)
 % with H = hessian, grad = gradient
 % returns theta as a column vector
 MAX_ITERS = 75;
-EPS_STOPPING = 1e-6;
 
 % X = [ones(size(X,1),1) X]; %no need to add an intercept, just take X as passed in to the function
 p = size(X,1);
@@ -44,8 +43,7 @@ for i=1:MAX_ITERS
 	update_step = - pinv(H) * grad;
 	theta = theta + update_step;
 	
-	%max(abs(update_step)) / (max(theta) - min(theta)),
-	if norm(theta-theta_old) < 10e-8 %max(abs(update_step)) <= EPS_STOPPING * (max(theta) - min(theta))
+	if norm(theta-theta_old) < 10e-8
 		break
 	end
 	
