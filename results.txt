@@ -1,19 +1,4 @@
-DET on offense
-CLE on defense
-parsed all four games
-
-M_count =
-
-   111
-    12
-    91
-    13
-M_count =
-
-   111
-    12
-    91
-    13
+all four DET/CLE games
 
 
 
@@ -23,87 +8,11 @@ M_count =
 ======================================================================================================================
 ======================================================================================================================
 
+DET/CLE 20070204 only
 
 
-DET on offense
-CLE on defense
-20070204 only
+======================================================================================================================
+======================================================================================================================
 
+2008-2009, entire SW division
 
-
-M_count =
-
-   19
-    3
-   16
-    5
-
-
-M_count =
-
-   19
-    3
-   16
-    5
-
-
-
-==========================================================
-Bradley-Terry (logit):
-after 25 EM iterations log-likelihood = -24.75
-epsilon = 2.5627e-009
-
-1pt                     3pt             OFFENSIVE PLAYER
-30.089     37.294    -1.6679            Chauncey Billups
-45.774     16.169   -0.51532            Lindsey Hunter
--5.422       13.7    -1.1464            Jason Maxiell
-27.743     9.6163    0.06924            Dale Davis
-3.1767     3.9449      5.858            Antonio McDyess
-14.811     3.2789    -1.1244            Richard Hamilton
--2.1114    -1.6203    -7.9719           Rasheed Wallace
--44.726    -13.833    -1.5967           Tayshaun Prince
--21.252    -20.996    -1.0352           Chris Webber
--42.789     -35.93    -1.4337           Carlos Delfino
-
-1pt                     3pt             DEFENSIVE PLAYER
-29.975     22.616   -0.16436            Donyell Marshall
-32.535     22.216     8.9021            Daniel Gibson
-5.4036     15.471    -7.9542            Eric Snow
-22.253     14.877    -7.5665            LeBron James
-0.5212     10.501    -9.4847            Anderson Varejao
-0.54514    -8.1771     7.3719           Drew Gooden
--21.211     -12.55     5.4548           Damon Jones
--4.3433    -13.146     5.8418           Larry Hughes
--31.474    -19.896    -11.015           Sasha Pavlovic
--28.916    -20.291    -1.9484           Zydrunas Ilgauskas
-RESCALE_EFFECTIVE_SIGMA =  0.57357
-
-
-==========================================================
-Thurstone Case V (Hessian probit):
-after 25 EM iterations log-likelihood = -24.75
-epsilon = 2.6141e-009
-
-1pt                     3pt             OFFENSIVE PLAYER
-38.32     50.436     -1.783             Chauncey Billups
--8.6934     17.149     -1.084           Jason Maxiell
-61.957     15.649   -0.95199            Lindsey Hunter
-36.866     14.232    0.16538            Dale Davis
-5.3306     11.801      7.637            Antonio McDyess
-20.235     4.8986    -2.0808            Richard Hamilton
--4.4341    -8.7694    -10.167           Rasheed Wallace
--61.063    -12.616     -1.578           Tayshaun Prince
--27.284    -28.349    -1.6113           Chris Webber
--56.77    -49.271     -1.196            Carlos Delfino
-
-1pt                     3pt             DEFENSIVE PLAYER
-37.57      24.21    0.51142             Donyell Marshall
-42.12     22.848     10.745             Daniel Gibson
-4.4879     14.608    -9.7145            Eric Snow
-0.41084     13.523    -11.487           Anderson Varejao
-28.262     13.435    -9.2875            LeBron James
--27.373    -10.402     6.7576           Damon Jones
-0.48065     -10.49     8.9575           Drew Gooden
--3.599    -11.576     7.1846            Larry Hughes
--41.219    -19.815    -13.275           Sasha Pavlovic
--36.674    -21.177    -3.0413           Zydrunas Ilgauskas
