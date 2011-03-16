@@ -1,4 +1,4 @@
-function [theta,i] = MLE_Gaussian(X,y,w,theta_init)
+function [theta,i] = MLE_Gaussian(X,y,w,SIGMA,theta_init)
 % This function maximizes the likelihood of:
 %  \prod_{{x,y}} (1 - probit(theta' * X))^M[y^0,X] * (probit(theta' * X))^M[y^1,X]
 %
@@ -29,18 +29,24 @@ for i=1:MAX_ITERS
 	%ll(i)=0;
 	H = zeros(n,n);
 	for j=1:p
-		cdf = normcdf(X(j,:)*theta,0,sqrt(10));
-		negcdf = normcdf(-X(j,:)*theta,0,sqrt(10));
+		xjtheta = X(j,:)*theta;
+	
+		cdf = normcdf(xjtheta,0,SIGMA);
+		negcdf = normcdf(-xjtheta,0,SIGMA);
 		
-		if cdf < eps(negcdf) || negcdf < eps(cdf)
+		if cdf <= eps(negcdf) || negcdf <= eps(cdf)
 			% These datapoints will be fine.
 			% They have so much functional margin we don't realistically need to worry about them.
 			continue
 		end
 		
-		pdf = normpdf(X(j,:)*theta,0,sqrt(10));
-		grad = grad + w(j) * X(j,:)'*(y(j)*pdf/cdf - (1-y(j))*pdf/negcdf);
-		H = H - w(j) * (y(j)*(pdf/cdf + pdf^2/cdf^2) + (1-y(j))*(pdf^2/negcdf^2 + pdf/negcdf)) * X(j,:)'*X(j,:);
+		pdf = normpdf(xjtheta,0,SIGMA);
+		
+		y_pdf_cdf = y(j)*pdf/cdf;
+		yneg_pdf_negcdf = (1-y(j))*pdf/negcdf;
+		
+		grad = grad + w(j) * X(j,:)'*(y_pdf_cdf - yneg_pdf_negcdf); %grad = grad + w(j) * X(j,:)'*(y(j)*pdf/cdf - (1-y(j))*pdf/negcdf);
+		H = H - w(j) * (y_pdf_cdf*(1 + pdf/cdf) + yneg_pdf_negcdf*(1 + pdf/negcdf)) * X(j,:)'*X(j,:); % H = H - w(j) * (y(j)*(pdf/cdf + pdf^2/cdf^2) + (1-y(j))*(pdf^2/negcdf^2 + pdf/negcdf)) * X(j,:)'*X(j,:);
 	%	ll(i) = ll(i) + Y(j)*log(hxj) + (1-Y(j))*log(1-hxj);
 	end
 	

@@ -45,7 +45,7 @@ epsilon_BradleyTerry =  0.064761
 115.61    -12.477    -74.877            Larry Hughes
 
 ===========================================================
-Thurstone Case V (steepest descent probit):
+Thurstone Case V (Hessian probit):
  epsilon_ThurstoneCaseV =  0.0659
 
 1pt                     3pt             OFFENSIVE PLAYER
