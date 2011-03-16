@@ -58,7 +58,7 @@ for i=1:MAX_ITERS
 	H = - X' * bsxfun(@times,X,H_inside_coeff);
 
 
-	update_step = - pinv(H) * grad;
+	update_step = - H \ grad;
 	theta = theta + update_step;
 	
 	if max(abs(update_step))/EFFECTIVE_SIGMA < 10e-6

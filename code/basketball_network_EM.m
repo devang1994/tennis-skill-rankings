@@ -44,9 +44,12 @@ E_D_schedule = logical([
 % However, one of the thetas is fixed to zero, so there are only L-2 remaining.
 Theta = zeros(3, L-1); % With no prior information, initialize to zeros (we used to start at all zeroes on every call to mle_logistic anyway)
 
-% Find a theta to pin at zero. To do this, we find the column of dataset with the most 1s.
+% We must find a theta to pin at zero, otherwise there are infinite solutions.
+% To achieve this, we find the column of dataset with the most possessions.
 [num_observations indx_pinned_theta] = max(sum(dataset(:,2:end)));
 indx_pinned_column = indx_pinned_theta + 1; %since we ignore the first column (R) during the max
+
+% The problem is still if you have players that only play together, but this is a more controlled singularity...
 
 %========================
 %   Begin EM Algorithm
@@ -127,7 +130,7 @@ for j = 1:MAX_ITER
 		if i == 2
 			% pin theta_init(indx_pinned_theta) to zero
 			theta_init = [theta_init(1:(indx_pinned_theta-1));theta_init((indx_pinned_theta+1):end)];
-			X = repmat([dataset(:,2:(indx_pinned_column-1)); dataset(:,(indx_pinned_column+1):end)], [1 2]);
+			X = repmat([dataset(:,2:(indx_pinned_column-1)) dataset(:,(indx_pinned_column+1):end)], [2 1]);
 		else
 			X = [dataset(:,2:end); dataset(:,2:end)];
 		end
@@ -156,7 +159,7 @@ for j = 1:MAX_ITER
 		
 		disp(['    MLE iterations: ' num2str(itersneeded)]);
 		if any(isnan(theta_w_i))
-		  dbstop if naninf
+			keyboard
 		end
 		
 		if i == 2
