@@ -28,10 +28,12 @@ disp(title)
 disp(['after ' num2str(length(ll)) ' EM iterations log-likelihood = ' num2str(ll(end))])
 epsilon,
 disp('');
-disp('1pt offense	3pt offense   1pt defense	3pt defense');
+disp('          offense                    defense');
+disp('   1pt      2pt      3pt      1pt      2pt      3pt');
 for player_rank=1:P
 	n = skill2_order(player_rank);
-	disp([num2str([theta_scaled(:,n);theta_scaled(:,P+n)]','%1.2f\t') '    ' names{n}]);
+	matrix_str = num2str([0;theta_scaled(:,n);theta_scaled(:,P+n)]','% 7.3f  ');
+	disp([matrix_str(:,7:end) '    ' names{n}]);
 end
 
 RESCALE_EFFECTIVE_SIGMA,
