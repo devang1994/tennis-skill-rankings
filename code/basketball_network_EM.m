@@ -41,17 +41,7 @@ E_D_schedule = logical([
 
 %We have L-1 thetas because there is one theta for every player.
 %L is the number of columns in the dataset, but one of the columns is R
-% However, one of the thetas is fixed to zero, so there are only L-2 remaining.
 Theta = zeros(3, L-1); % With no prior information, initialize to zeros (we used to start at all zeroes on every call to mle_logistic anyway)
-
-% We must find a theta to pin at zero, otherwise there are infinite solutions.
-% To achieve this, we find the column of dataset with the most possessions.
-[num_observations indx_pinned_theta] = max(sum(dataset(:,2:end)));
-indx_pinned_column = indx_pinned_theta + 1; %since we ignore the first column (R) during the max
-select_unpinned_thetas = (1:(L-1) ~= indx_pinned_theta);
-select_unpinned_theta_columns = [false select_unpinned_thetas]; % the first column is not for thetas
-
-% The problem is still if you have players that only play together, but this is a more controlled singularity...
 
 %========================
 %   Begin EM Algorithm
@@ -129,15 +119,9 @@ for j = 1:MAX_ITER
 	for i = 1:3
 		% theta_init is a column vector
 		theta_init = Theta(i,:)';
-		if i == 2
-			% pin theta_init(indx_pinned_theta) to zero
-			theta_init = theta_init(select_unpinned_thetas);
-			X = repmat(dataset(:,select_unpinned_theta_columns), [2 1]);
-		else
-			X = [dataset(:,2:end); dataset(:,2:end)];
-		end
+
+		X = [dataset(:,2:end); dataset(:,2:end)];
 		y = [zeros(M,1); ones(M,1)];
-		
 		
 		% For each datapoint (each row), compute:
 		%   How many of the eight soft-datapoints have W_i == false?
@@ -164,9 +148,6 @@ for j = 1:MAX_ITER
 			keyboard
 		end
 		
-		if i == 2
-			theta_w_i = [theta_w_i(1:(indx_pinned_theta-1));0;theta_w_i(indx_pinned_theta:end)];
-		end
 		% theta_w_i is returned as a column vector
 		Theta(i,:) = theta_w_i';
 	end

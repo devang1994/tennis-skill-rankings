@@ -28,6 +28,10 @@ p = size(X,1);
 n = size(X,2);
 theta = theta_init;
 
+step_size = 1.0;
+theta_prev = nan(size(theta));
+ll_prev = -inf;
+
 for i=1:MAX_ITERS
 	
 	xjtheta_all = X*theta;
@@ -36,8 +40,16 @@ for i=1:MAX_ITERS
 	% We have to check for overshoot here...	
 	% New LL = \prod_{{x,y}} (1 - logistic(theta' * X))^M[y^0,X] * (logistic(theta' * X))^M[y^1,X]
 	ll_new = sum(w(y==1) .* log(hxj_all(y==1))) + sum(w(y==0) .* log(1 - hxj_all(y==0)));
-	disp(ll_new)
-	
+	if ll_new < ll_prev
+		disp('Overshoot!')
+		disp(ll_prev)
+		disp(ll_new)
+		theta = theta_prev;
+		step_size = 0.5;
+		continue;
+	end
+	ll_prev = ll_new;
+	theta_prev = theta;
 	
 	% grad = grad + w(j) * X(j,:)'*(y(j) - hxj);
 	% grad = grad + w(j) * X(j,:)'*(y(j) - hxj_all(j));
@@ -60,7 +72,7 @@ for i=1:MAX_ITERS
 
 
 	update_step = - pinv(H) * grad;
-	theta = theta + update_step;
+	theta = theta + step_size*update_step;
 	
 	if max(abs(update_step))/EFFECTIVE_SIGMA < 10e-6
 		break
