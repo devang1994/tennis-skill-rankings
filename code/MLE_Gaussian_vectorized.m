@@ -133,14 +133,7 @@ for i=1:MAX_ITERS
 
 	H = - X_pruned' * bsxfun(@times,X_pruned,H_inside_coeff); % H = H - w(j) * (y_pdf_cdf(j)*(1 + pdf_cdf_j(j)) + yneg_pdf_negcdf(j)*(1 + pdf_negcdf_j(j))) * (X(j,:)'*X(j,:)); 
 	
-	if i >= 1
-		% In general, Hessian is the optimal step size
-		update_step = - pinv(H) * grad;
-	else
-		% No Hessian for initial step, help move toward global optimum
-		US = X_pruned' * bsxfun(@times,X_pruned,w(prune_training_points));
-		update_step = - pinv(US) * grad;
-	end
+	update_step = - pinv(H) * grad;
 	
 	if any(isnan(update_step))
 		keyboard
