@@ -1,1 +1,2 @@
+# LaTeX temporary files
 relre:^report/report.(aux|log|synctex.gz|bbl|blg)
