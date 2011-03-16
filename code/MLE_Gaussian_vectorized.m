@@ -15,7 +15,7 @@ function [theta,i] = MLE_Gaussian_vectorized(X,y,w,SIGMA,theta_init)
 %
 % newton-raphson on the probit function
 % returns theta as a column vector
-MAX_ITERS = 250;
+MAX_ITERS = 100;
 STOPPING_EPS = 1e-6; % For stopping criteria
 PRUNING_EPS = STOPPING_EPS *STOPPING_EPS; % To avoid dividing by zero
 
