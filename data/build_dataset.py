@@ -58,7 +58,7 @@ def get_teams_from_filename(filepath):
     """
     both_teams_str = filepath.split('.')[-2]
     away_team, home_team = (both_teams_str[:3], both_teams_str[3:])
-    return {'away': away_team, 'home': home_team, away_team: home_team, home_team: away_team}
+    return {'away': away_team, 'home': home_team, away_team: 'away', home_team: 'home'}
 
 def parse_raw_data_from_rows(rows_iterable):
     """Parse a basic CSV file where the first row is a header and subsequent rows are data values
@@ -310,10 +310,11 @@ def get_possession_outcomes(teams, raw_dictionaries):
             pass
         else:
             # Identify the offensive and defensive players
-            offensive_court = teams[curr['who']]
-            defensive_court = FLIP[offensive_team]
-            outcome['offense'] = curr[offensive_team + ' players']
-            outcome['defense'] = curr[defensive_team + ' players']
+            offensive_court = teams[outcome['who']]
+            defensive_court = FLIP[offensive_court]
+            
+            outcome['offense'] = curr[offensive_court + ' players']
+            outcome['defense'] = curr[defensive_court + ' players']
             # CAUTION: If you have two players with the exatly same name in the league, you can't tell them apart.
             result_outcome_dicts.append(outcome)
 
@@ -392,7 +393,7 @@ all_iid_observations = itertools.chain.from_iterable(observations)
 print("Writing D_r ...")
 with open("D_r.csv", "w") as f:
     # But only write rows where OFFENSIVE_TEAM is attacking.
-    for row in relevant_observations:
+    for row in all_iid_observations:
         if MAX_THREE_POINTS and row['R'] > 3:
             f.write('3')
         else:
@@ -402,7 +403,7 @@ with open("D_r.csv", "w") as f:
 # Write #2a (offense)
 print("Writing D_C_offense ...")
 with open("D_C_offense.csv", "w") as f:
-    for row in relevant_observations:
+    for row in all_iid_observations:
         offensive_logicals = [str(int(p in row['offense'])) for p in offensive_players]
         f.write(','.join(offensive_logicals))
         f.write("\n")
@@ -410,7 +411,7 @@ with open("D_C_offense.csv", "w") as f:
 # Write #2b (defense)
 print("Writing D_C_defense ...")
 with open("D_C_defense.csv", "w") as f:
-    for row in relevant_observations:
+    for row in all_iid_observations:
         defensive_logicals = [str(int(p in row['defense'])) for p in defensive_players]
         f.write(','.join(defensive_logicals))
         f.write("\n")
