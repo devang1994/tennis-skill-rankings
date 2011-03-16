@@ -135,7 +135,7 @@ for j = 1:MAX_ITER
 			% TODO: We don't need sigma in the same way we don't need an intercept term
 			%       What changes need to be made to MLE_Gaussian so that it uses a constant sigma?
 			% TODO: Reformulate the Gaussian to accept weighted datapoints
-			[theta_w_i itersneeded] = MLE_Gaussian(X,y,weights,SIGMA,theta_init);
+			[theta_w_i itersneeded] = MLE_Gaussian_vectorized(X,y,weights,SIGMA,theta_init);
 		else
 			% There are two soft-datapoints for each actual datapoint.
 			% i.e. one with W_i == true and one with W_i == false
