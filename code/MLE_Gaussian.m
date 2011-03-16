@@ -16,7 +16,6 @@ function [theta,i] = MLE_Gaussian(X,y,w,theta_init)
 % newton-raphson on the probit function
 % returns theta as a column vector
 MAX_ITERS = 40;
-EPS_STOPPING = 1e-6;
 
 % X = [ones(size(X,1),1) X]; %no need to add an intercept, just take X as passed in to the function
 p = size(X,1);
@@ -32,26 +31,29 @@ for i=1:MAX_ITERS
 	for j=1:p
 		cdf = normcdf(X(j,:)*theta,0,sqrt(10));
 		negcdf = normcdf(-X(j,:)*theta,0,sqrt(10));
+		
+		if cdf < eps(negcdf) || negcdf < eps(cdf)
+			% These datapoints will be fine.
+			% They have so much functional margin we don't realistically need to worry about them.
+			continue
+		end
+		
 		pdf = normpdf(X(j,:)*theta,0,sqrt(10));
 		grad = grad + w(j) * X(j,:)'*(y(j)*pdf/cdf - (1-y(j))*pdf/negcdf);
 		H = H - w(j) * (y(j)*(pdf/cdf + pdf^2/cdf^2) + (1-y(j))*(pdf^2/negcdf^2 + pdf/negcdf)) * X(j,:)'*X(j,:);
 	%	ll(i) = ll(i) + Y(j)*log(hxj) + (1-Y(j))*log(1-hxj);
 	end
 	
-	if sum(sum(isnan(H))) || sum(isnan(grad))
-		break;
-	end
-	
-%	update_step = - pinv(H) * grad;
 	if i > 1
-		update_step = -pinv(H) * grad; % .1 works on small dataset
+		% In general, Hessian is the optimal step size
+		update_step = - pinv(H) * grad;
 	else
+		% No Hessian for initial step
 		update_step = - pinv(X'*X)*grad;
 	end
 	theta = theta + update_step;
 	
-	%max(abs(update_step)) / (max(theta) - min(theta)),
-	if norm(theta-theta_old) < 10e-8 %max(abs(update_step)) < EPS_STOPPING * (max(theta) - min(theta))
+	if norm(theta-theta_old) < 10e-8
 		break
 	end
 	
