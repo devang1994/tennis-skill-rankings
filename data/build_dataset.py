@@ -380,7 +380,7 @@ for rawfile in filenames:
 # Generate a fixed ordering of unique players for output purposes.
 fixed_player_order = sorted(reduce(frozenset.union, (ps['both'] for ps in players)))
     
-all_iid_observations = itertools.chain.from_iterable(observations)
+all_iid_observations = [d for d in itertools.chain.from_iterable(observations)]
     
 # Now we just need to write everything out.
 # For each row/Bayesian-observation, we must output the following:
@@ -404,7 +404,7 @@ with open("D_r.csv", "w") as f:
 print("Writing D_C_offense ...")
 with open("D_C_offense.csv", "w") as f:
     for row in all_iid_observations:
-        offensive_logicals = [str(int(p in row['offense'])) for p in offensive_players]
+        offensive_logicals = [str(int(p in row['offense'])) for p in fixed_player_order]
         f.write(','.join(offensive_logicals))
         f.write("\n")
             
@@ -412,7 +412,7 @@ with open("D_C_offense.csv", "w") as f:
 print("Writing D_C_defense ...")
 with open("D_C_defense.csv", "w") as f:
     for row in all_iid_observations:
-        defensive_logicals = [str(int(p in row['defense'])) for p in defensive_players]
+        defensive_logicals = [str(int(p in row['defense'])) for p in fixed_player_order]
         f.write(','.join(defensive_logicals))
         f.write("\n")
 
