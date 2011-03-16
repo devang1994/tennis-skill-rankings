@@ -23,6 +23,8 @@ PRUNING_EPS = STOPPING_EPS *STOPPING_EPS; % To avoid dividing by zero
 p = size(X,1);
 n = size(X,2);
 theta = theta_init;
+	lambda = 1;
+ll(1) = (sum(w(1:p/2).*log(1-normcdf(X(1:p/2,:)*theta,0,SIGMA))) + sum(w(p/2+1:end).*log(normcdf(X(p/2+1:end,:)*theta,0,SIGMA))));
 
 for i=1:MAX_ITERS
 	
@@ -72,7 +74,7 @@ for i=1:MAX_ITERS
 
 	H = - X(prune_training_points,:)' * bsxfun(@times,X(prune_training_points,:),H_inside_coeff); % H = H - w(j) * (y_pdf_cdf(j)*(1 + pdf_cdf_j(j)) + yneg_pdf_negcdf(j)*(1 + pdf_negcdf_j(j))) * (X(j,:)'*X(j,:)); 
 	
-	if i > 1
+	if i >= 1
 		% In general, Hessian is the optimal step size
 		update_step = - pinv(H) * grad;
 	else
@@ -80,10 +82,24 @@ for i=1:MAX_ITERS
 		US = X(prune_training_points,:)' * bsxfun(@times,X(prune_training_points,:),w(prune_training_points));
 		update_step = - pinv(US) * grad;
 	end
-	theta = theta + update_step;
+	theta = theta + lambda*update_step;
 	
-	if max(abs(update_step))/SIGMA < STOPPING_EPS
+	ll(i+1) = (sum(w(1:p/2).*log(1-normcdf(X(1:p/2,:)*theta,0,SIGMA))) + sum(w(p/2+1:end).*log(normcdf(X(p/2+1:end,:)*theta,0,SIGMA))));
+	while (ll(1,i+1) < ll(1,i) && lambda > STOPPING_EPS)
+		theta = theta - lambda*update_step;
+		lambda = lambda/2;
+		theta = theta + lambda*update_step;
+		ll(i+1) = (sum(w(1:p/2).*log(1-normcdf(X(1:p/2,:)*theta,0,SIGMA))) + sum(w(p/2+1:end).*log(normcdf(X(p/2+1:end,:)*theta,0,SIGMA))));
+	end
+	
+	if lambda < STOPPING_EPS
+		theta = theta - lambda*update_step;
+	end
+	
+	if max(abs(lambda*update_step))/SIGMA < STOPPING_EPS
 		break
 	end
 end
-
+%if lambda < 1
+%	lambda
+%end
