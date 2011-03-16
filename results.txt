@@ -45,7 +45,7 @@ epsilon_BradleyTerry =  0.064761
 115.61    -12.477    -74.877            Larry Hughes
 
 ===========================================================
-Thurstone Case V (probit):
+Thurstone Case V (steepest descent probit):
  epsilon_ThurstoneCaseV =  0.0659
 
 1pt                     3pt             OFFENSIVE PLAYER
@@ -91,7 +91,13 @@ DET on offense
 CLE on defense
 20070204 only
 
+M_count =
 
+   19
+    3
+   16
+    5
+    
 EM Iteration #82 completed:  ll = -32.017764 ,  E_D changed by 9.6068249e-006
 
 ===========================================================
@@ -124,7 +130,35 @@ epsilon_BradleyTerry =  0.085707
 EFFECTIVE_SIGMA =  0.57357
 
 ===========================================================
-Thurstone Case V (probit):
+
+Thurstone Case V (Hessian probit):
+epsilon_ThurstoneCaseV =  0.088388
+
+1pt                     3pt             OFFENSIVE PLAYER
+-0.3668    -11.021    -15.765           Tayshaun Prince
+0.81386     6.0102     15.765           Lindsey Hunter
+-0.26105    -18.383    -8.1062          Chris Webber
+-0.65471   -0.38122     5.1957          Richard Hamilton
+0.41455    -27.816    -14.537           Carlos Delfino
+0.17789     4.6165    -2.6578           Jason Maxiell
+-7.1953    -5.3923   -0.34714           Rasheed Wallace
+7.6423    0.38122    0.34714            Antonio McDyess
+1.8424     5.4624     10.947            Dale Davis
+-0.17789     21.468     9.1584          Chauncey Billups
+
+1pt                     3pt             DEFENSIVE PLAYER
+10.849     8.4003     10.266            Daniel Gibson
+9.3707    -9.2108   -0.75246            Drew Gooden
+-6.9569     5.5325     1.6342           Eric Snow
+6.6008    -10.691    -8.7948            Damon Jones
+-8.9237     4.1997    0.75246           Anderson Varejao
+-6.1538     5.6797     8.7948           LeBron James
+3.2639     10.046     10.257            Donyell Marshall
+-2.8168    -15.057    -10.257           Zydrunas Ilgauskas
+-10.402    -13.411    -10.266           Sasha Pavlovic
+7.4039    -10.544    -1.6342            Larry Hughes
+===========================================================
+Thurstone Case V (steepest descent probit):
  epsilon_ThurstoneCaseV =  0.0770
 
 1pt                     3pt             OFFENSIVE PLAYER
