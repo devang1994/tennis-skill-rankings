@@ -1,8 +1,8 @@
 function [Theta log_likelihood epsilon] = basketball_network_EM(dataset, MAX_ITER, gaussian)
 
 % dataset is MxL, where M is number of possessions,
-% and L is 12*2*num_teams (for O and D). Note that if we
-% just have one set of O and D teams, ie DET O and CLE D,
+% and L is P*2 (for O and D, where P is the number of players).
+% Note that if we just have one set of O and D teams, ie DET O and CLE D,
 % we only need 24 elements, not 48, since our dataset
 % doesn't deal with CLE O and DET D
 % gaussian is true if we use MLE_Gaussian, false for logistic
@@ -39,9 +39,14 @@ E_D_schedule = logical([
         0 1 1; % k=7 --> Lose1, Win2 , Win3  ==> R=3
         1 1 1;])%k=8 --> Win1 , Win2 , Win3  ==> R=3
 
-%We have L=1 thetas because there is one theta for every player.
+%We have L-1 thetas because there is one theta for every player.
 %L is the number of columns in the dataset, but one of the columns is R
+% However, one of the thetas is fixed to zero, so there are only L-2 remaining.
 Theta = zeros(3, L-1); % With no prior information, initialize to zeros (we used to start at all zeroes on every call to mle_logistic anyway)
+
+% Find a theta to pin at zero. To do this, we find the column of dataset with the most 1s.
+[num_observations indx_pinned_theta] = max(sum(dataset(:,2:end)));
+indx_pinned_column = indx_pinned_theta + 1; %since we ignore the first column (R) during the max
 
 %========================
 %   Begin EM Algorithm
@@ -119,6 +124,15 @@ for j = 1:MAX_ITER
 	for i = 1:3
 		% theta_init is a column vector
 		theta_init = Theta(i,:)';
+		if i == 2
+			% pin theta_init(indx_pinned_theta) to zero
+			theta_init = [theta_init(1:(indx_pinned_theta-1));theta_init((indx_pinned_theta+1):end)];
+			X = repmat([dataset(:,2:(indx_pinned_column-1)); dataset(:,(indx_pinned_column+1):end)], [1 2]);
+		else
+			X = [dataset(:,2:end); dataset(:,2:end)];
+		end
+		y = [zeros(M,1); ones(M,1)];
+		
 		
 		% For each datapoint (each row), compute:
 		%   How many of the eight soft-datapoints have W_i == false?
@@ -127,8 +141,6 @@ for j = 1:MAX_ITER
 		pr_wi_true  = sum(E_D(:, E_D_schedule(:,i)'),2);
 
 		% Do weighted parameter estimation for W_i, go!
-		X = [dataset(:,2:end); dataset(:,2:end)];
-		y = [zeros(M,1); ones(M,1)];
 		weights = [pr_wi_false; pr_wi_true];
 		
 		if gaussian
@@ -147,6 +159,9 @@ for j = 1:MAX_ITER
 		  dbstop if naninf
 		end
 		
+		if i == 2
+			theta_w_i = [theta_w_i(1:(indx_pinned_theta-1));0;theta_w_i(indx_pinned_theta:end)];
+		end
 		% theta_w_i is returned as a column vector
 		Theta(i,:) = theta_w_i';
 	end
