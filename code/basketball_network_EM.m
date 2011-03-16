@@ -8,7 +8,7 @@ function [Theta log_likelihood epsilon] = basketball_network_EM(dataset, MAX_ITE
 % gaussian is true if we use MLE_Gaussian, false for logistic
 
 if gaussian
-	SIGMA = 10,
+	SIGMA = sqrt(10),
 end
 
 % http://steelandsilicon.wordpress.com/2010/07/17/a-few-matlaboctave-notes/
@@ -139,7 +139,7 @@ for j = 1:MAX_ITER
 		else
 			% There are two soft-datapoints for each actual datapoint.
 			% i.e. one with W_i == true and one with W_i == false
-			[theta_w_i itersneeded] = mle_logistic(X,y,weights,theta_init);
+			[theta_w_i itersneeded] = mle_logistic_vectorized(X,y,weights,theta_init);
 		end
 		
 		disp(['    MLE iterations: ' num2str(itersneeded)]);

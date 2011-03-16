@@ -15,7 +15,7 @@ function [theta,i] = MLE_Gaussian_vectorized(X,y,w,SIGMA,theta_init)
 %
 % newton-raphson on the probit function
 % returns theta as a column vector
-MAX_ITERS = 40;
+MAX_ITERS = 250;
 STOPPING_EPS = 1e-6; % For stopping criteria
 PRUNING_EPS = STOPPING_EPS *STOPPING_EPS; % To avoid dividing by zero
 
@@ -67,6 +67,8 @@ for i=1:MAX_ITERS
 	% H = H - w(j).* (  y_pdf_cdf_j(j).*(1 + pdf_cdf_j(j)) + yneg_pdf_negcdf_j(j).*(1 + pdf_negcdf_j(j))  ) * X(j,:)'*X(j,:);
 	% Identity: A * B = \sum col_a * row_b
 	%	So: \sum X(j,:)'*X(j,:) = X' * X
+	%	    \sum X(j,:)'*w(j)*X(j,:) = X' * (w .* X)
+	%	                                     bsxfun
 
 	H = - X(prune_training_points,:)' * bsxfun(@times,X(prune_training_points,:),H_inside_coeff); % H = H - w(j) * (y_pdf_cdf(j)*(1 + pdf_cdf_j(j)) + yneg_pdf_negcdf(j)*(1 + pdf_negcdf_j(j))) * (X(j,:)'*X(j,:)); 
 	
