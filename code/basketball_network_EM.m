@@ -1,8 +1,8 @@
 function [Theta log_likelihood epsilon] = basketball_network_EM(dataset, MAX_ITER, gaussian)
 
 % dataset is MxL, where M is number of possessions,
-% and L is 12*2*num_teams (for O and D). Note that if we
-% just have one set of O and D teams, ie DET O and CLE D,
+% and L is P*2 (for O and D, where P is the number of players).
+% Note that if we just have one set of O and D teams, ie DET O and CLE D,
 % we only need 24 elements, not 48, since our dataset
 % doesn't deal with CLE O and DET D
 % gaussian is true if we use MLE_Gaussian, false for logistic
@@ -39,7 +39,7 @@ E_D_schedule = logical([
         0 1 1; % k=7 --> Lose1, Win2 , Win3  ==> R=3
         1 1 1;])%k=8 --> Win1 , Win2 , Win3  ==> R=3
 
-%We have L=1 thetas because there is one theta for every player.
+%We have L-1 thetas because there is one theta for every player.
 %L is the number of columns in the dataset, but one of the columns is R
 Theta = zeros(3, L-1); % With no prior information, initialize to zeros (we used to start at all zeroes on every call to mle_logistic anyway)
 
@@ -119,6 +119,9 @@ for j = 1:MAX_ITER
 	for i = 1:3
 		% theta_init is a column vector
 		theta_init = Theta(i,:)';
+
+		X = [dataset(:,2:end); dataset(:,2:end)];
+		y = [zeros(M,1); ones(M,1)];
 		
 		% For each datapoint (each row), compute:
 		%   How many of the eight soft-datapoints have W_i == false?
@@ -127,8 +130,6 @@ for j = 1:MAX_ITER
 		pr_wi_true  = sum(E_D(:, E_D_schedule(:,i)'),2);
 
 		% Do weighted parameter estimation for W_i, go!
-		X = [dataset(:,2:end); dataset(:,2:end)];
-		y = [zeros(M,1); ones(M,1)];
 		weights = [pr_wi_false; pr_wi_true];
 		
 		if gaussian
@@ -144,7 +145,7 @@ for j = 1:MAX_ITER
 		
 		disp(['    MLE iterations: ' num2str(itersneeded)]);
 		if any(isnan(theta_w_i))
-		  dbstop if naninf
+			keyboard
 		end
 		
 		% theta_w_i is returned as a column vector
