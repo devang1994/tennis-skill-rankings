@@ -80,7 +80,7 @@ for i=1:MAX_ITERS
 	else
 		% No Hessian for initial step
 		US = X(prune_training_points,:)' * bsxfun(@times,X(prune_training_points,:),w(prune_training_points));
-		update_step = - pinv(US)*grad;
+		update_step = - pinv(US) * grad;
 	end
 	theta = theta + lambda*update_step;
 	
