@@ -23,7 +23,8 @@ function [theta,i] = mle_logistic_vectorized(X,y,w,theta_init)
 MAX_ITERS = 500;
 EFFECTIVE_SIGMA = (sqrt(3*10)/pi);
 SIGMA_EPS_STOP = 1e-10;
-PRUNING_EPS = 1e-8;
+STOPPING_EPS = 1e-6;
+PRUNING_EPS = STOPPING_EPS * STOPPING_EPS;
 
 % X = [ones(size(X,1),1) X]; %no need to add an intercept, just take X as passed in to the function
 p = size(X,1);
@@ -36,23 +37,38 @@ ll_prev = -inf(size(y));
 
 for i=1:MAX_ITERS
 	
+	%==============================
+	%   Precompute useful values
+	%==============================
+	
 	xjtheta_all = X*theta;
 	hxj_all = sigmoid(X*theta); 
+	neg_hxj_all = 1 - hxj_all;
 	
-	% For numerical stability we will prune datapoints that have so much functional margin that
+	%========================================
+	%   Remove points that cause underflow
+	%========================================
+	
+	% For numerical stability we will prune datapoints that have such a bad functional margin that changes to theta no longer affect their likelihoods
 	%   1 - hxj_all(y==0)  -->  0   ==>   log(1 - hxj_all(y==0))  -->  -Inf
 	% or
 	%   hxj_all(y==1)  -->  0       ==>   log(hxj_all(y==1))  -->  -Inf
-	% They have so much functional margin we don't realistically need to worry about them anyway...
-	prune_training_points = true(size(hxj_all)); % By default, keep everything.
-	prune_training_points(y==0) = prune_training_points(y==0) & ~(1 - hxj_all(y==0) <= PRUNING_EPS);
-	prune_training_points(y==1) = prune_training_points(y==1) & ~(    hxj_all(y==1) <= PRUNING_EPS);
+	% i.e. these are the points that have been declared "outliers" by the sigmoid
+	% Similarly, once can also prune datapoints that have such a good functional margin that they will be satisfied no matter what happens to theta
+	% These are also points that would have no influence on the gradient anyway:
+	%   hxj_all(y==0)  -->  0
+	% or
+	%   hxj_all(y==1)  -->  1
+	prune_training_points = ~(neg_hxj_all <= PRUNING_EPS) & ~(hxj_all <= PRUNING_EPS);
 	
+	%=======================================================
+	%   Check log-likelihood for overshoot or convergence
+	%=======================================================
 	
 	% We have to check for overshoot here...
-	ll_new = nan(size(hxj_all));
+	ll_new = nan(size(y));
 	ll_new(y==1) = w(y==1) .* log(hxj_all(y==1));
-	ll_new(y==0) = w(y==0) .* log(1 - hxj_all(y==0));
+	ll_new(y==0) = w(y==0) .* log(neg_hxj_all(y==0));
 	
 	% Now, use ll_new_total and ll_prev_total to detect:
 	%  1. Stop criterion
@@ -72,14 +88,14 @@ for i=1:MAX_ITERS
 		step_size = step_size * 0.5;
 		disp(['step size reduced to ' num2str(step_size)]);
 		%keyboard
-		if step_size < SIGMA_EPS_STOP
-			break
-		else
-			continue;
-		end
+		continue;
 	end
 	ll_prev = ll_new;
 	theta_prev = theta;
+	
+	%=================================
+	%   Perform Newton-Raphson step
+	%=================================
 	
 	% grad = grad + w(j) * X(j,:)'*(y(j) - hxj);
 	% grad = grad + w(j) * X(j,:)'*(y(j) - hxj_all(j));
@@ -94,18 +110,21 @@ for i=1:MAX_ITERS
 	% H = H - w(j) * hxj*(1-hxj)*X(j,:)'*X(j,:);
 	% H = H - w(j) * hxj*(1-hxj)*  (  X(j,:)'*X(j,:)  );
 	% H = H - w(j) * hxj*(1-hxj)*  (  X(j,:)'*X(j,:)  );
-	H_inside_coeff = w(prune_training_points) .* hxj_all(prune_training_points) .* (1 - hxj_all(prune_training_points));
+	H_inside_coeff = w(prune_training_points) .* hxj_all(prune_training_points) .* (neg_hxj_all(prune_training_points));
 	% Identity: A * B = \sum col_a * row_b
 	%	So: \sum X(j,:)'*X(j,:) = X' * X
 	%	    \sum X(j,:)'*w(j)*X(j,:) = X' * (w .* X)
 	%	                                     bsxfun
 	H = - X_pruned' * bsxfun(@times,X_pruned,H_inside_coeff);
 
-
 	update_step = - pinv(H) * grad;
 	theta = theta + step_size*update_step;
 	
-	if max(abs(update_step))/EFFECTIVE_SIGMA < 10e-6
+	%===========================
+	%   Check for convergence
+	%===========================
+	
+	if max(abs(step_size*update_step))/EFFECTIVE_SIGMA < STOPPING_EPS
 		break
 	end
 end
