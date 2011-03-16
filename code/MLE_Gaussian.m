@@ -13,10 +13,9 @@ function [theta,i] = MLE_Gaussian(X,y,w,theta_init)
 %
 % http://www.stat.psu.edu/~jiali/course/stat597e/notes2/logit.pdf but with no intercept
 %
-% newton raphson: theta = theta - inv(H)* grad;
-% with H = hessian, grad = gradient
+% gradient ascent on the probit function
 % returns theta as a column vector
-MAX_ITERS = 50;
+MAX_ITERS = 250;
 EPS_STOPPING = 1e-6;
 
 % X = [ones(size(X,1),1) X]; %no need to add an intercept, just take X as passed in to the function
@@ -31,13 +30,15 @@ for i=1:MAX_ITERS
 	%ll(i)=0;
 	H = zeros(n,n);
 	for j=1:p
-		hxj = normcdf(X(j,:)*theta,0,sqrt(10));
-		grad = grad + w(j) * X(j,:)'*(y(j) - hxj);
-		H = H - w(j) * hxj*(1-hxj)*X(j,:)'*X(j,:);
+		cdf = normcdf(X(j,:)*theta,0,sqrt(10));
+		pdf = normpdf(X(j,:)*theta,0,sqrt(10));
+		grad = grad + w(j) * X(j,:)'*(y(j)*pdf/cdf - (1-y(j))*pdf/(1-cdf));
+%		H = H - w(j) * hxj*(1-hxj)*X(j,:)'*X(j,:);
 	%	ll(i) = ll(i) + Y(j)*log(hxj) + (1-Y(j))*log(1-hxj);
 	end
 	
-	update_step = - pinv(H) * grad;
+%	update_step = - pinv(H) * grad;
+	update_step = .1*grad;
 	theta = theta + update_step;
 	
 	%max(abs(update_step)) / (max(theta) - min(theta)),
