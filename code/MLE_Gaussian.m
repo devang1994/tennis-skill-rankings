@@ -13,9 +13,9 @@ function [theta,i] = MLE_Gaussian(X,y,w,theta_init)
 %
 % http://www.stat.psu.edu/~jiali/course/stat597e/notes2/logit.pdf but with no intercept
 %
-% gradient ascent on the probit function
+% newton-raphson on the probit function
 % returns theta as a column vector
-MAX_ITERS = 250;
+MAX_ITERS = 30;
 EPS_STOPPING = 1e-6;
 
 % X = [ones(size(X,1),1) X]; %no need to add an intercept, just take X as passed in to the function
@@ -31,14 +31,23 @@ for i=1:MAX_ITERS
 	H = zeros(n,n);
 	for j=1:p
 		cdf = normcdf(X(j,:)*theta,0,sqrt(10));
+		negcdf = normcdf(-X(j,:)*theta,0,sqrt(10));
 		pdf = normpdf(X(j,:)*theta,0,sqrt(10));
-		grad = grad + w(j) * X(j,:)'*(y(j)*pdf/cdf - (1-y(j))*pdf/(1-cdf));
-%		H = H - w(j) * hxj*(1-hxj)*X(j,:)'*X(j,:);
+		grad = grad + w(j) * X(j,:)'*(y(j)*pdf/cdf - (1-y(j))*pdf/negcdf);
+		H = H - w(j) * (y(j)*(pdf/cdf + pdf^2/cdf^2) + (1-y(j))*(pdf^2/negcdf^2 + pdf/negcdf)) * X(j,:)'*X(j,:);
 	%	ll(i) = ll(i) + Y(j)*log(hxj) + (1-Y(j))*log(1-hxj);
 	end
 	
+	if sum(sum(isnan(H))) || sum(isnan(grad))
+		break;
+	end
+	
 %	update_step = - pinv(H) * grad;
-	update_step = .1*grad;
+	if i > 1
+		update_step = -pinv(H) * grad; % .1 works on small dataset
+	else
+		update_step = - pinv(X'*X)*grad;
+	end
 	theta = theta + update_step;
 	
 	%max(abs(update_step)) / (max(theta) - min(theta)),
