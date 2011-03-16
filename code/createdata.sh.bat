@@ -1,0 +1,1 @@
+python ../data/build_dataset.py ../data/raw/*.csv
