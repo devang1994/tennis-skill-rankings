@@ -23,6 +23,7 @@ function [theta,i] = mle_logistic_vectorized(X,y,w,theta_init)
 MAX_ITERS = 500;
 EFFECTIVE_SIGMA = (sqrt(3*10)/pi);
 SIGMA_EPS_STOP = 1e-10;
+PRUNING_EPS = 1e-8;
 
 % X = [ones(size(X,1),1) X]; %no need to add an intercept, just take X as passed in to the function
 p = size(X,1);
@@ -31,25 +32,44 @@ theta = theta_init;
 
 step_size = 1.0;
 theta_prev = nan(size(theta));
-ll_prev = -inf;
+ll_prev = -inf(size(y));
 
 for i=1:MAX_ITERS
 	
 	xjtheta_all = X*theta;
 	hxj_all = sigmoid(X*theta); 
 	
-	% We have to check for overshoot here...	
+	% For numerical stability we will prune datapoints that have so much functional margin that
+	%   1 - hxj_all(y==0)  -->  0   ==>   log(1 - hxj_all(y==0))  -->  -Inf
+	% or
+	%   hxj_all(y==1)  -->  0       ==>   log(hxj_all(y==1))  -->  -Inf
+	% They have so much functional margin we don't realistically need to worry about them anyway...
+	prune_training_points = true(size(hxj_all)); % By default, keep everything.
+	prune_training_points(y==0) = prune_training_points(y==0) & ~(1 - hxj_all(y==0) <= PRUNING_EPS);
+	prune_training_points(y==1) = prune_training_points(y==1) & ~(    hxj_all(y==1) <= PRUNING_EPS);
+	
+	
+	% We have to check for overshoot here...
+	ll_new = nan(size(hxj_all));
+	ll_new(y==1) = w(y==1) .* log(hxj_all(y==1));
+	ll_new(y==0) = w(y==0) .* log(1 - hxj_all(y==0));
+	
+	% Now, use ll_new_total and ll_prev_total to detect:
+	%  1. Stop criterion
+	%  2. Overshoot
 	% New LL = \prod_{{x,y}} (1 - logistic(theta' * X))^M[y^0,X] * (logistic(theta' * X))^M[y^1,X]
-	ll_new = sum(w(y==1) .* log(hxj_all(y==1))) + sum(w(y==0) .* log(1 - hxj_all(y==0)));
-	if abs(ll_new - ll_prev)/p < SIGMA_EPS_STOP
+	ll_new_total = sum(ll_new(prune_training_points));
+	ll_prev_total = sum(ll_prev(prune_training_points));
+
+	if abs(ll_new_total - ll_prev_total)/p < SIGMA_EPS_STOP
 		break
-	elseif ll_new < ll_prev
+	elseif ll_new_total < ll_prev_total
 		disp('Overshoot!')
-		disp(ll_prev)
-		disp(ll_new)
+		disp(ll_prev_total)
+		disp(ll_new_total)
 		theta = theta_prev;
 		step_size = 0.5;
-		keyboard
+		%keyboard
 		continue;
 	end
 	ll_prev = ll_new;
@@ -62,17 +82,17 @@ for i=1:MAX_ITERS
 	%                          multiplies
 	%                              each element of a column vector
 	% Then, transpose to return a column vector at the end
-	grad = X' * ((y - hxj_all) .* w);
+	grad = X(prune_training_points,:)' * ((y(prune_training_points) - hxj_all(prune_training_points)) .* w(prune_training_points));
 	
 	% H = H - w(j) * hxj*(1-hxj)*X(j,:)'*X(j,:);
 	% H = H - w(j) * hxj*(1-hxj)*  (  X(j,:)'*X(j,:)  );
 	% H = H - w(j) * hxj*(1-hxj)*  (  X(j,:)'*X(j,:)  );
-	H_inside_coeff = w .* hxj_all .* (1 - hxj_all);
+	H_inside_coeff = w(prune_training_points) .* hxj_all(prune_training_points) .* (1 - hxj_all(prune_training_points));
 	% Identity: A * B = \sum col_a * row_b
 	%	So: \sum X(j,:)'*X(j,:) = X' * X
 	%	    \sum X(j,:)'*w(j)*X(j,:) = X' * (w .* X)
 	%	                                     bsxfun
-	H = - X' * bsxfun(@times,X,H_inside_coeff);
+	H = - X(prune_training_points,:)' * bsxfun(@times,X(prune_training_points,:),H_inside_coeff);
 
 
 	update_step = - pinv(H) * grad;
