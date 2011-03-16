@@ -168,12 +168,20 @@ def combine_free_throws(raw_dictionaries):
         #=====================
         #   HANDLE EXISTING free_throw_counter (if applicable)
         #=====================
-    
+
         # If we have a free_throw_counter...
         if not (free_throw_counter is None):
-            # If there are no more events at time free_throw_counter['time']...
-            if d['time'] != free_throw_counter['time']:
-                # Store free_throw_counter!
+            # If there are no more events at time free_throw_counter['time']
+            #   then we know there are no more free throws.
+            no_more_events_at_timestamp = (d['time'] != free_throw_counter['time'])
+            #   OR
+            # If another foul occurs (e.g. on the rebound after the final free-throw was missed)
+            #   then we know to stop looking for more free-throws from this foul
+            #   OR
+            new_foul_started = (d['etype'] == 'foul')
+            # Are there any other circumstances where we 
+            if no_more_events_at_timestamp or new_foul_started:
+                # SAVE the resulting free_throw_counter!
                 output.append(free_throw_counter) 
                 free_throw_counter = None
     
@@ -182,7 +190,7 @@ def combine_free_throws(raw_dictionaries):
         #======================
     
         if d['etype'] == 'foul':
-            assert free_throw_counter is None # fouls can't happen _during_ free throws, can they?
+            assert free_throw_counter is None, repr(d)
             last_fouled_away_players = d['away players']
             last_fouled_home_players = d['home players']
             # We don't append the output, thereby deleting this row of data once we remember who the players on the court were
