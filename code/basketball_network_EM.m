@@ -198,7 +198,7 @@ for j = 1:MAX_ITER
 		for k=1:8
 			wins   = W_soft( E_D_schedule(k,:))     ;
 			losses = 1 - W_soft(~E_D_schedule(k,:)) ;
-			assert(numel([wins, losses]) == 3)
+			%I like this assertion but it eats up runtime %assert(numel([wins, losses]) == 3)
 			pr_w_c(k) = prod([wins, losses]);
 
 		end

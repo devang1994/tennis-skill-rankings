@@ -64,13 +64,19 @@ for i=1:MAX_ITERS
 	if abs(ll_new_total - ll_prev_total)/p < SIGMA_EPS_STOP
 		break
 	elseif ll_new_total < ll_prev_total
-		disp('Overshoot!')
+		disp(['Overshoot on iteration ' num2str(i) '!'])
 		disp(ll_prev_total)
 		disp(ll_new_total)
+		ll_prev = -inf(size(y)); % reset this. When you go back through ll_prev will be set to ll_new which should be the same ll_prev you had when you did the overshoot in the first place.
 		theta = theta_prev;
-		step_size = 0.5;
+		step_size = step_size * 0.5;
+		disp(['step size reduced to ' num2str(step_size)]);
 		%keyboard
-		continue;
+		if step_size < SIGMA_EPS_STOP
+			break
+		else
+			continue;
+		end
 	end
 	ll_prev = ll_new;
 	theta_prev = theta;
@@ -82,7 +88,8 @@ for i=1:MAX_ITERS
 	%                          multiplies
 	%                              each element of a column vector
 	% Then, transpose to return a column vector at the end
-	grad = X(prune_training_points,:)' * ((y(prune_training_points) - hxj_all(prune_training_points)) .* w(prune_training_points));
+	X_pruned = X(prune_training_points,:);
+	grad = X_pruned' * ((y(prune_training_points) - hxj_all(prune_training_points)) .* w(prune_training_points));
 	
 	% H = H - w(j) * hxj*(1-hxj)*X(j,:)'*X(j,:);
 	% H = H - w(j) * hxj*(1-hxj)*  (  X(j,:)'*X(j,:)  );
@@ -92,7 +99,7 @@ for i=1:MAX_ITERS
 	%	So: \sum X(j,:)'*X(j,:) = X' * X
 	%	    \sum X(j,:)'*w(j)*X(j,:) = X' * (w .* X)
 	%	                                     bsxfun
-	H = - X(prune_training_points,:)' * bsxfun(@times,X(prune_training_points,:),H_inside_coeff);
+	H = - X_pruned' * bsxfun(@times,X_pruned,H_inside_coeff);
 
 
 	update_step = - pinv(H) * grad;
