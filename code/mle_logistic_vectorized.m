@@ -35,7 +35,8 @@ for i=1:MAX_ITERS
 	
 	% We have to check for overshoot here...	
 	% New LL = \prod_{{x,y}} (1 - logistic(theta' * X))^M[y^0,X] * (logistic(theta' * X))^M[y^1,X]
-	% ll_new = sum(log(hxj_all(y==1))) + sum(log(1 - hxj_all(y==0)));
+	ll_new = sum(w(y==1) .* log(hxj_all(y==1))) + sum(w(y==0) .* log(1 - hxj_all(y==0)));
+	disp(ll_new)
 	
 	
 	% grad = grad + w(j) * X(j,:)'*(y(j) - hxj);
@@ -58,7 +59,7 @@ for i=1:MAX_ITERS
 	H = - X' * bsxfun(@times,X,H_inside_coeff);
 
 
-	update_step = - H \ grad;
+	update_step = - pinv(H) * grad;
 	theta = theta + update_step;
 	
 	if max(abs(update_step))/EFFECTIVE_SIGMA < 10e-6

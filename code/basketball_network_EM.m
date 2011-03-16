@@ -48,6 +48,8 @@ Theta = zeros(3, L-1); % With no prior information, initialize to zeros (we used
 % To achieve this, we find the column of dataset with the most possessions.
 [num_observations indx_pinned_theta] = max(sum(dataset(:,2:end)));
 indx_pinned_column = indx_pinned_theta + 1; %since we ignore the first column (R) during the max
+select_unpinned_thetas = (1:(L-1) ~= indx_pinned_theta);
+select_unpinned_theta_columns = [false select_unpinned_thetas]; % the first column is not for thetas
 
 % The problem is still if you have players that only play together, but this is a more controlled singularity...
 
@@ -129,8 +131,8 @@ for j = 1:MAX_ITER
 		theta_init = Theta(i,:)';
 		if i == 2
 			% pin theta_init(indx_pinned_theta) to zero
-			theta_init = [theta_init(1:(indx_pinned_theta-1));theta_init((indx_pinned_theta+1):end)];
-			X = repmat([dataset(:,2:(indx_pinned_column-1)) dataset(:,(indx_pinned_column+1):end)], [2 1]);
+			theta_init = theta_init(select_unpinned_thetas);
+			X = repmat(dataset(:,select_unpinned_theta_columns), [2 1]);
 		else
 			X = [dataset(:,2:end); dataset(:,2:end)];
 		end

@@ -74,11 +74,11 @@ for i=1:MAX_ITERS
 	
 	if i > 1
 		% In general, Hessian is the optimal step size
-		update_step = - H \ grad;
+		update_step = - pinv(H) * grad;
 	else
 		% No Hessian for initial step
 		US = X(prune_training_points,:)' * bsxfun(@times,X(prune_training_points,:),w(prune_training_points));
-		update_step = - US \ grad;
+		update_step = - pinv(US) * grad;
 	end
 	theta = theta + update_step;
 	
