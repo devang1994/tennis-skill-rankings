@@ -218,7 +218,7 @@ for j = 1:MAX_ITER
 
 	E_D_update_magnitude = max(max(abs(E_D - OldProb)));
 	
-	disp(['EM Iteration #' num2str(j) ' completed:  ll = ' num2str(log_likelihood(j)) ' ,  E_D changed by ' num2str(E_D_update_magnitude)]);
+	disp(['EM Iteration #' num2str(j) ' completed:  ll = ' num2str(log_likelihood(j),'%.8g') ' ,  E_D changed by ' num2str(E_D_update_magnitude, '%.8g')]);
 	if OctaveMode
 		fflush(stdout);
 	end
