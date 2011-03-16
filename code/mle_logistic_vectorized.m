@@ -22,6 +22,7 @@ function [theta,i] = mle_logistic_vectorized(X,y,w,theta_init)
 % returns theta as a column vector
 MAX_ITERS = 500;
 EFFECTIVE_SIGMA = (sqrt(3*10)/pi);
+SIGMA_EPS_STOP = 1e-10;
 
 % X = [ones(size(X,1),1) X]; %no need to add an intercept, just take X as passed in to the function
 p = size(X,1);
@@ -40,12 +41,15 @@ for i=1:MAX_ITERS
 	% We have to check for overshoot here...	
 	% New LL = \prod_{{x,y}} (1 - logistic(theta' * X))^M[y^0,X] * (logistic(theta' * X))^M[y^1,X]
 	ll_new = sum(w(y==1) .* log(hxj_all(y==1))) + sum(w(y==0) .* log(1 - hxj_all(y==0)));
-	if ll_new < ll_prev
+	if abs(ll_new - ll_prev)/p < SIGMA_EPS_STOP
+		break
+	elseif ll_new < ll_prev
 		disp('Overshoot!')
 		disp(ll_prev)
 		disp(ll_new)
 		theta = theta_prev;
 		step_size = 0.5;
+		keyboard
 		continue;
 	end
 	ll_prev = ll_new;
