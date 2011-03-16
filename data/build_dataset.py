@@ -99,15 +99,15 @@ def get_unique_player_names(team_names, cleaned_dictionaries):
     """
     names = {}
     
-    names['away'] = list(reduce(frozenset.union, (d['away players'] for d in cleaned_dictionaries)))
-    names['home'] = list(reduce(frozenset.union, (d['home players'] for d in cleaned_dictionaries)))
+    names['away'] = reduce(frozenset.union, (d['away players'] for d in cleaned_dictionaries))
+    names['home'] = reduce(frozenset.union, (d['home players'] for d in cleaned_dictionaries))
     
     names[team_names['away']] = names['away']
     names[team_names['home']] = names['home']
 
     return names
 
-def remove_irrelevant_data(d):
+def remove_irrelevant_data(d, options):
     """Filter for relevant data only
     
     We should be left with 'etype' of:
@@ -141,8 +141,8 @@ def remove_irrelevant_data(d):
         return None
         
     # Configurable filters
-    assert(d['period'] in ['1', '2', '3', '4'])
-    if SKIP_SECOND_HALF and (d['period'] in ['3', '4']):
+    assert(int(d['period']) >= 1)
+    if options['SKIP_SECOND_HALF'] and (d['period'] in ['3', '4']):
         # Ignore garbage time, configure this in the Configuration section of this script
         return None
 
@@ -213,7 +213,7 @@ def get_possession_outcome(d, d_next):
     #==========================
     #   Scoring and attempts
     #==========================
-
+    
     if d['etype'] == 'turnover':
         # Turnover
         outcome['R'] = 0
@@ -236,11 +236,15 @@ def get_possession_outcome(d, d_next):
         # Shot made
         outcome['R'] = int(d['points'])
         
-        if d_next['etype'] == 'all free throws' and d_next['time'] == d['time']:
+        if d_next is None:
+            # Shot made, end of game
+            return (outcome, False)
+        elif d_next['etype'] == 'all free throws' and d_next['time'] == d['time']:
             # Shot made, bonus free-throw(s)
             outcome['R'] += d_next['free throws made']
             return (outcome, True)
         else:
+            # Shot made, regular
             return (outcome, False)
 
     elif d['etype'] == 'all free throws':
@@ -279,8 +283,8 @@ def get_possession_outcomes(raw_dictionaries):
         if outcome is None:
             pass
         else:
-            outcome['away'] = curr['away players']
-            outcome['home'] = curr['home players']
+            # CAUTION: If you have two players with the exatly same name in the league, you can't tell them apart.
+            outcome['players'] = frozenset.union(curr['away players'], curr['home players'])
             result_outcome_dicts.append(outcome)
 
     return result_outcome_dicts
@@ -302,10 +306,13 @@ if len(sys.argv) <= 1:
     sys.exit(0)
 
 # Get all the files specified on the command line
-input_files = itertools.chain.from_iterable(glob.glob(a) for a in sys.argv[1:])
+filenames = [fname for fname in itertools.chain.from_iterable(glob.glob(a) for a in sys.argv[1:])]
+players = [] # A list of dictionaries, each dictionary contains the players for a given datafile
+observations = []  # List of lists, each sublist contains all of the bayesian network observations for a given datafile
 
-for rawfile in input_files:
+for rawfile in filenames:
     print("Reading " + rawfile + " ...")
+    CONF = {'SKIP_SECOND_HALF': SKIP_SECOND_HALF}
    
     # Get team names
     input_teamnames = get_teams_from_filename(rawfile)
@@ -316,38 +323,44 @@ for rawfile in input_files:
         reader = csv.reader(f)
         raw_dictionaries = parse_raw_data_from_rows(reader)
 
+    # Heuristics...
+    if '5' in (d['period'] for d in raw_dictionaries):
+        # The game went to overtime. There was no garbage time. Take it all.
+        CONF['SKIP_SECOND_HALF'] = False
+    
     # Remove irrelevant data
-    cleaned_dictionaries = [remove_irrelevant_data(d) for d in raw_dictionaries]
+    cleaned_dictionaries = [remove_irrelevant_data(d, CONF) for d in raw_dictionaries]
     filtered_dictionaries = [d for d in cleaned_dictionaries if not (d is None)]
 
     # Combine free throws into single rows
     events = combine_free_throws(filtered_dictionaries)
 
     # Data has been collected into the form of Bayesian network observations.
-    # {'away': set_of_players, 'home': set_of_players, 'R': integer, 'who': team_name}
+    # {'players': set_of_players, 'R': integer, 'who': team_name}
     almost_bayesian_network_observations = get_possession_outcomes(events)
 
-    # Now we just need to write it out.
-    # For each row/Bayesian-observation, we must output the following:
-    #   1. Result (integer)
-    #   2. Players on the court if OFFENSIVE_TEAM is attacking and DEFENSIVE_TEAM is defending
-    #   3. Player names
+    # Extract player names. They are returned as sets so they are not yet ordered.
+    player_sets = get_unique_player_names(input_teamnames,filtered_dictionaries)
+    
+    print("parsed {0} observations".format(str(len(almost_bayesian_network_observations))))
+    
+    players.append(player_sets)
+    observations.append(almost_bayesian_network_observations)
 
-
-
-# Extract player names. The order of these names will determine the organization of the output CSV files.
-unique_player_lists = get_unique_player_names(input_teamnames,filtered_dictionaries)
-
-#            team_names['away'] + ' players': away_players,
-#            team_names['home'] + ' players': home_players,
-
-
-
-offensive_players = unique_player_lists[OFFENSIVE_TEAM]
-defensive_players = unique_player_lists[DEFENSIVE_TEAM]
+# Generate a unique ordering of players for output purposes.
+offensive_players = list(reduce(frozenset.union, (ps[OFFENSIVE_TEAM] for ps in players)))
+defensive_players = list(reduce(frozenset.union, (ps[DEFENSIVE_TEAM] for ps in players)))
+    
+all_iid_observations = itertools.chain.from_iterable(observations)
+    
+# Now we just need to write everything out.
+# For each row/Bayesian-observation, we must output the following:
+#   1. Result (integer)
+#   2. Players on the court if OFFENSIVE_TEAM is attacking and DEFENSIVE_TEAM is defending
+#   3. Player names
 
 # We only output possessions where OFFENSIVE_TEAM is the attacking team
-relevant_observations = [row for row in almost_bayesian_network_observations if row['who'] == OFFENSIVE_TEAM]
+relevant_observations = [row for row in all_iid_observations if row['who'] == OFFENSIVE_TEAM]
 
 # Write #1
 R_fname = 'D_' + OFFENSIVE_TEAM + DEFENSIVE_TEAM + "_r"
@@ -366,8 +379,7 @@ C_offense_fname = "D_C_" + OFFENSIVE_TEAM + "_offense"
 print("Writing {0} ...".format(C_offense_fname))
 with open(C_offense_fname + ".csv", "w") as f:
     for row in relevant_observations:
-        players_on_court = row['home'] | row['away']
-        offensive_logicals = [str(int(p in players_on_court)) for p in offensive_players]
+        offensive_logicals = [str(int(p in row['players'])) for p in offensive_players]
         f.write(','.join(offensive_logicals))
         f.write("\n")
             
@@ -376,8 +388,7 @@ C_defense_fname = "D_C_" + DEFENSIVE_TEAM + "_defense"
 print("Writing {0} ...".format(C_defense_fname))
 with open(C_defense_fname + ".csv", "w") as f:
     for row in relevant_observations:
-        players_on_court = row['home'] | row['away']
-        defensive_logicals = [str(int(p in players_on_court)) for p in defensive_players]
+        defensive_logicals = [str(int(p in row['players'])) for p in defensive_players]
         f.write(','.join(defensive_logicals))
         f.write("\n")
 
@@ -386,7 +397,11 @@ print("Writing loaddata.m ...")
 with open('loaddata.m', "w") as f:
     f.write("names_offense = {" + ','.join("'" + p + "'" for p in offensive_players) + "};\n")
     f.write("names_defense = {" + ','.join("'" + p + "'" for p in defensive_players) + "};\n")
-    f.write("% This file came from {0}\n".format(rawfile))
+
+    f.write("% This file came from:\n")
+    for fname in filenames:
+        f.write("%   {0}\n".format(fname))
+
     f.write("{0} = csvread('{0}.csv');\n".format(R_fname))
     f.write("{0} = logical(csvread('{0}.csv'));\n".format(C_offense_fname))
     f.write("{0} = logical(csvread('{0}.csv'));\n".format(C_defense_fname))
