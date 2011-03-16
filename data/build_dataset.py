@@ -1,29 +1,24 @@
 ﻿#! /usr/bin/env python
 
 # Output file format is a series of MATLAB matrices in CSV format.
-# D_*_r.csv: Column vector of length N
+# We have N possessions and P players.
+#
+# D_r.csv: Column vector of length N
 #   Each element is the value of Result for that particular observation -- either 0, 1, 2, or 3
-#   The name of the output file will depend on the name of the teams on offense and defense.
-#   For example, Detroit's offensive possessions against Cleveland would be D_r_DETCLE.csv
 #
-# D_C_*_offense.csv: N×12 matrix
+# D_C_offense.csv: N×P matrix
 #   Each row corresponds to an observation from D_r (in the same row).
-#   Each row has 12 boolean values (1 or 0), and exactly five of them are set to "1". These five ones correspond to the five offensive players on the court during this possession.
-#   TODO: When we support multiple games, and mixed rosters, you'll need more than 12 here, but for now it's fine.
-#   The name of the output file will depend on the name of the team.
-#   For example, Detroit will be D_C_DET_offense.csv
+#   Each row has P boolean values (1 or 0), and exactly five of them are set to "1".
+#   These five correspond to the five offensive players on the court during this possession.
 #
-#
-# D_C_*_defense.csv: N×12 matrix
-#   Same as D_C_*_offense but for the defensive team.
+# D_C_defense.csv: N×P matrix
+#   Same as D_C_offense but for the defensive team.
 #
 # loaddata.m: script
-#   This script will populate a cell array named names_offense.
-#   This cell array will have one entry for each column of D_C_offense, and contains the name of the player corresponding to that column.
+#   This script will populate a cell array named player_names with length P.
+#   This cell array will have one entry for each column of D_C_offense (or D_C_defense), and contains the name of the player corresponding to that column.
 #   For example,
-#     names_offense{3} in matlab would be the name of the player in the third column on offense.
-#
-#   This script will also populate a cell array named names_defense.
+#     names_offense{3} in matlab would be the name of the player in the third column.
 #
 #   This script will also load your data.
 
@@ -37,9 +32,8 @@ import csv
 #   Configuration
 #===================
 
-OFFENSIVE_TEAM = 'DET'
-DEFENSIVE_TEAM = 'CLE'
 SKIP_SECOND_HALF = True # Simple way to avoid garbage time
+KEEP_ALL_QUARTERS_IF_GAME_GOES_TO_OVERTIME = True # We'll get more datapoints this way, and there isn't likely to be garbage time in a game that is tied after four quarters.
 MAX_THREE_POINTS = True # Assume plays scoring 4 or more points are just for 3 in the model. There wouldn't be enough w_4^1 datapoints to warrant modelling them.
 
 #======================
@@ -307,7 +301,7 @@ if len(sys.argv) <= 1:
 
 # Get all the files specified on the command line
 filenames = [fname for fname in itertools.chain.from_iterable(glob.glob(a) for a in sys.argv[1:])]
-players = [] # A list of dictionaries, each dictionary contains the players for a given datafile
+players = [] # A list of dictionaries, each dictionary contains the players for a given datafile in the format returned by get_unique_player_names(), i.e. keyed by 'home', 'away', or 'CLE', 'DET', etc.
 observations = []  # List of lists, each sublist contains all of the bayesian network observations for a given datafile
 
 for rawfile in filenames:
@@ -324,7 +318,7 @@ for rawfile in filenames:
         raw_dictionaries = parse_raw_data_from_rows(reader)
 
     # Heuristics...
-    if '5' in (d['period'] for d in raw_dictionaries):
+    if KEEP_ALL_QUARTERS_IF_GAME_GOES_TO_OVERTIME and ('5' in (d['period'] for d in raw_dictionaries)):
         # The game went to overtime. There was no garbage time. Take it all.
         CONF['SKIP_SECOND_HALF'] = False
     
@@ -346,6 +340,7 @@ for rawfile in filenames:
     
     players.append(player_sets)
     observations.append(almost_bayesian_network_observations)
+
 
 # Generate a unique ordering of players for output purposes.
 offensive_players = list(reduce(frozenset.union, (ps[OFFENSIVE_TEAM] for ps in players)))

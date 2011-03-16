@@ -30,14 +30,14 @@ L = size(dataset,2); % (1+24*num_teams)
 % E_D(m,k): The m-th datapoint's probability of being assigned combination k, where
 E_D = nan(M,8);
 E_D_schedule = logical([
-	0 0 0; % k=1 --> Lose1, Lose2, Lose3
-        0 0 1; % k=2 --> Lose1, Lose2, Win3
-        0 1 0; % k=3 --> Lose1, Win2 , Lose3
-        0 1 1; %  .
-        1 0 0; %  .
-        1 0 1; %  .
-        1 1 0; % k=7 --> Win1, Win2, Lose3
-        1 1 1;])%k=8 --> Win1, Win2, Win3
+	0 0 0; % k=1 --> Lose1, Lose2, Lose3 ==> R=0
+        1 0 0; % k=2 --> Win1 , Lose2, Lose3 ==> R=1
+        0 1 0; % k=3 --> Lose1, Win2 , Lose3 ==> R=2
+        1 1 0; %  .                          ==> R=2
+        0 0 1; %  .                          ==> R=3
+        1 0 1; %  .                          ==> R=3
+        0 1 1; % k=7 --> Lose1, Win2 , Win3  ==> R=3
+        1 1 1;])%k=8 --> Win1 , Win2 , Win3  ==> R=3
 
 %We have L=1 thetas because there is one theta for every player.
 %L is the number of columns in the dataset, but one of the columns is R
@@ -197,6 +197,7 @@ for j = 1:MAX_ITER
 		for k=1:8
 			wins   = W_soft( E_D_schedule(k,:))     ;
 			losses = 1 - W_soft(~E_D_schedule(k,:)) ;
+			assert(numel([wins, losses]) == 3)
 			pr_w_c(k) = prod([wins, losses]);
 
 		end
