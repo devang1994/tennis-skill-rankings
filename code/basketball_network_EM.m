@@ -228,8 +228,10 @@ for j = 1:MAX_ITER
 		fflush(stdout);
 	end
 	
-	if (j > 1) && (abs(log_likelihood(j) - log_likelihood(j-1))/M < 10e-6) && (E_D_update_magnitude < 10e-6)
-		break;
+	if (j > 1) && (abs(log_likelihood(j) - log_likelihood(j-1))/M < 10e-6)
+		if (E_D_update_magnitude < 10e-6)
+			break;
+		end
 	end
 
 	OldProb = E_D;
