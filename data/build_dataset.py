@@ -32,6 +32,8 @@ import csv
 #   Configuration
 #===================
 
+OFFENSIVE_TEAM = 'DET'
+DEFENSIVE_TEAM = 'CLE'
 SKIP_SECOND_HALF = True # Simple way to avoid garbage time
 KEEP_ALL_QUARTERS_IF_GAME_GOES_TO_OVERTIME = True # We'll get more datapoints this way, and there isn't likely to be garbage time in a game that is tied after four quarters.
 MAX_THREE_POINTS = True # Assume plays scoring 4 or more points are just for 3 in the model. There wouldn't be enough w_4^1 datapoints to warrant modelling them.
@@ -127,11 +129,8 @@ def remove_irrelevant_data(d, options):
         
     if d['etype'] == 'jump ball':
         return None
-    
-    if d['etype'] == 'foul':
-        return None
         
-    if d['etype'] == 'free throw' and d['type'] == 'technical':
+    if d['etype'] == 'free throw' and d['reason'] == 'technical':
         return None
         
     # Configurable filters
@@ -145,7 +144,7 @@ def remove_irrelevant_data(d, options):
     
     return {'away players': away_players,
             'home players': home_players,
-            'whose possession': d['team'], #This doesn't apply on fouls but we got rid of them.
+            'whose possession': d['team'], #This doesn't apply on fouls but we won't use them except for who's on the court
             'etype':  d['etype'],
             'result': d['result'],
             'points': d['points'],
@@ -158,28 +157,38 @@ def combine_free_throws(raw_dictionaries):
     output = []
     
     free_throw_counter = None
+    # Players can change in between free throws so we want to remember who was involved in the play before the first free-throw
+    away_players = None
+    home_players = None
     for d in raw_dictionaries:
         # Is this a free throw?
-        if d['etype'] == 'free throw':
+        if d['etype'] == 'foul':
+            assert free_throw_counter is None
+            assert away_players is None
+            assert home_players is None
+            free_throw_counter = 0
+            away_players = curr['away players']
+            home_players = curr['home players']
+            # We don't append the output, thereby deleting this row of data once we remember who the players on the court were
+        elif d['etype'] == 'free throw':
             
             # Should we assert that the d['time'] is the same the whole time?
             #   "I don't think it matters" --Leland Chen
             
-            # Start a new count?
-            if free_throw_counter is None:
-                free_throw_counter = 0
-
             if d['result'] == 'made':
                 free_throw_counter += 1
                 
             if d['num'] == d['outof']:
                 aggregate_d = d.copy()
+                aggregate_d['away players'] = away_players
+                aggregate_d['home players'] = home_players
                 aggregate_d['etype'] = 'all free throws'
                 aggregate_d['free throws made'] = free_throw_counter
                 output.append(aggregate_d) # APPEND HERE! CAUTION! Don't forget to read this line! It's important.
                 # Done, reset the counter
                 free_throw_counter = None
-                
+                away_players = None
+                home_players = None
         else:
             output.append(d) # Keep it the same
     
@@ -340,7 +349,6 @@ for rawfile in filenames:
     
     players.append(player_sets)
     observations.append(almost_bayesian_network_observations)
-
 
 # Generate a unique ordering of players for output purposes.
 offensive_players = list(reduce(frozenset.union, (ps[OFFENSIVE_TEAM] for ps in players)))
