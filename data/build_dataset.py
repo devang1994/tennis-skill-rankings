@@ -153,42 +153,44 @@ def remove_irrelevant_data(d, options):
             'outof':  d['outof']}
 
 def combine_free_throws(raw_dictionaries):
-    """Merge freethrows into one row"""
+    """Merge freethrows into one row, remove `d['etype'] == 'foul'` while we're at it"""
     output = []
     
     free_throw_counter = None
     # Players can change in between free throws so we want to remember who was involved in the play before the first free-throw
-    away_players = None
-    home_players = None
+    last_fouled_away_players = None
+    last_fouled_home_players = None
     for d in raw_dictionaries:
         # Is this a free throw?
         if d['etype'] == 'foul':
             assert free_throw_counter is None
-            assert away_players is None
-            assert home_players is None
-            free_throw_counter = 0
-            away_players = curr['away players']
-            home_players = curr['home players']
+            last_fouled_away_players = d['away players']
+            last_fouled_home_players = d['home players']
             # We don't append the output, thereby deleting this row of data once we remember who the players on the court were
         elif d['etype'] == 'free throw':
-            
+            assert not last_fouled_away_players is None
+            assert not last_fouled_home_players is None
             # Should we assert that the d['time'] is the same the whole time?
             #   "I don't think it matters" --Leland Chen
+
+            # Start a new count?
+            if free_throw_counter is None:
+                free_throw_counter = 0
             
             if d['result'] == 'made':
                 free_throw_counter += 1
                 
             if d['num'] == d['outof']:
                 aggregate_d = d.copy()
-                aggregate_d['away players'] = away_players
-                aggregate_d['home players'] = home_players
+                aggregate_d['away players'] = last_fouled_away_players
+                aggregate_d['home players'] = last_fouled_home_players
                 aggregate_d['etype'] = 'all free throws'
                 aggregate_d['free throws made'] = free_throw_counter
                 output.append(aggregate_d) # APPEND HERE! CAUTION! Don't forget to read this line! It's important.
                 # Done, reset the counter
                 free_throw_counter = None
-                away_players = None
-                home_players = None
+                last_fouled_away_players = None
+                last_fouled_home_players = None
         else:
             output.append(d) # Keep it the same
     
