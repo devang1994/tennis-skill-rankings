@@ -15,7 +15,7 @@ function [theta,i] = MLE_Gaussian(X,y,w,theta_init)
 %
 % newton-raphson on the probit function
 % returns theta as a column vector
-MAX_ITERS = 30;
+MAX_ITERS = 40;
 EPS_STOPPING = 1e-6;
 
 % X = [ones(size(X,1),1) X]; %no need to add an intercept, just take X as passed in to the function
