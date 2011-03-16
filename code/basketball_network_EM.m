@@ -7,6 +7,10 @@ function [Theta log_likelihood epsilon] = basketball_network_EM(dataset, MAX_ITE
 % doesn't deal with CLE O and DET D
 % gaussian is true if we use MLE_Gaussian, false for logistic
 
+if gaussian
+	SIGMA = sqrt(10),
+end
+
 % http://steelandsilicon.wordpress.com/2010/07/17/a-few-matlaboctave-notes/
 if size(ver('Octave'),1)
     OctaveMode = 1;
@@ -131,11 +135,11 @@ for j = 1:MAX_ITER
 			% TODO: We don't need sigma in the same way we don't need an intercept term
 			%       What changes need to be made to MLE_Gaussian so that it uses a constant sigma?
 			% TODO: Reformulate the Gaussian to accept weighted datapoints
-			[theta_w_i itersneeded] = MLE_Gaussian(X,y,weights,theta_init);
+			[theta_w_i itersneeded] = MLE_Gaussian_vectorized(X,y,weights,SIGMA,theta_init);
 		else
 			% There are two soft-datapoints for each actual datapoint.
 			% i.e. one with W_i == true and one with W_i == false
-			[theta_w_i itersneeded] = mle_logistic(X,y,weights,theta_init);
+			[theta_w_i itersneeded] = mle_logistic_vectorized(X,y,weights,theta_init);
 		end
 		
 		disp(['    MLE iterations: ' num2str(itersneeded)]);
@@ -178,9 +182,9 @@ for j = 1:MAX_ITER
 	
 		% Each datapoint has different C values (dataset(m,2:end)) so they will have different W1 W2 and W3
 		if gaussian
-			W1 = normcdf(Theta(1,:)*dataset(m,2:end)',0,sqrt(10));
-			W2 = normcdf(Theta(2,:)*dataset(m,2:end)',0,sqrt(10));
-			W3 = normcdf(Theta(3,:)*dataset(m,2:end)',0,sqrt(10));
+			W1 = normcdf(Theta(1,:)*dataset(m,2:end)',0,SIGMA);
+			W2 = normcdf(Theta(2,:)*dataset(m,2:end)',0,SIGMA);
+			W3 = normcdf(Theta(3,:)*dataset(m,2:end)',0,SIGMA);
 		else
 			W1 = sigmoid(Theta(1,:)*dataset(m,2:end)');
 			W2 = sigmoid(Theta(2,:)*dataset(m,2:end)');

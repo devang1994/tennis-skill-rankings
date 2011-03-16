@@ -1,4 +1,4 @@
-function [theta,i] = mle_logistic(X,y,w,theta_init)
+function [theta,i] = mle_logistic_vectorized(X,y,w,theta_init)
 % Weighted linear regression
 %
 % http://www.stanford.edu/class/cs229/notes/cs229-notes1.pdf
@@ -20,7 +20,7 @@ function [theta,i] = mle_logistic(X,y,w,theta_init)
 % newton raphson: theta = theta - inv(H)* grad;
 % with H = hessian, grad = gradient
 % returns theta as a column vector
-MAX_ITERS = 75;
+MAX_ITERS = 500;
 EFFECTIVE_SIGMA = (sqrt(3*10)/pi);
 
 % X = [ones(size(X,1),1) X]; %no need to add an intercept, just take X as passed in to the function
@@ -30,20 +30,33 @@ theta = theta_init;
 
 for i=1:MAX_ITERS
 	
-	grad = zeros(n,1);
-	%ll(i)=0;
-	H = zeros(n,n);
-	for j=1:p
-		hxj = sigmoid(X(j,:)*theta);
-		grad = grad + w(j) * X(j,:)'*(y(j) - hxj);
-		H = H - w(j) * hxj*(1-hxj)*X(j,:)'*X(j,:);
-	%	ll(i) = ll(i) + Y(j)*log(hxj) + (1-Y(j))*log(1-hxj);
-	end
+	xjtheta_all = X*theta;
+	hxj_all = sigmoid(X*theta); 
 	
+	% grad = grad + w(j) * X(j,:)'*(y(j) - hxj);
+	% grad = grad + w(j) * X(j,:)'*(y(j) - hxj_all(j));
+	% grad = grad +        X(j,:)'*   [w*(y - hxj_all)](j);
+	%                     row of X
+	%                          multiplies
+	%                              each element of a column vector
+	% Then, transpose to return a column vector at the end
+	grad = X' * ((y - hxj_all) .* w);
+	
+	% H = H - w(j) * hxj*(1-hxj)*X(j,:)'*X(j,:);
+	% H = H - w(j) * hxj*(1-hxj)*  (  X(j,:)'*X(j,:)  );
+	% H = H - w(j) * hxj*(1-hxj)*  (  X(j,:)'*X(j,:)  );
+	H_inside_coeff = w .* hxj_all .* (1 - hxj_all);
+	% Identity: A * B = \sum col_a * row_b
+	%	So: \sum X(j,:)'*X(j,:) = X' * X
+	%	    \sum X(j,:)'*w(j)*X(j,:) = X' * (w .* X)
+	%	                                     bsxfun
+	H = - X' * bsxfun(@times,X,H_inside_coeff);
+
+
 	update_step = - pinv(H) * grad;
 	theta = theta + update_step;
 	
-	if norm(update_step)/EFFECTIVE_SIGMA < 10e-6
+	if max(abs(update_step))/EFFECTIVE_SIGMA < 10e-6
 		break
 	end
 end
