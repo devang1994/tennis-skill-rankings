@@ -108,7 +108,7 @@ The relative distribution of outcomes $\prb{R = 2}$ vs. $\prb{R = 3}$ would be s
 
 In reality, a team that scores $R=3$ half the time and $R=1$ half the time is just as good as a team that scores $R=2$ all the time.
 However, any traditional Win/Lose model will unfairly penalize the likelihood of one of these teams over the other and leads to under-fitting.
-This might suggest that we have a random variable that represents $\Elin{\mathrm points scored}$, but this doesn't pass the clarity test.
+This might suggest that we have a random variable that represents $\Elin{\textrm{points scored}}$, but this doesn't pass the clarity test.
 
 
 % TODO(jdhuang): Modular in Win_i would be very meaningful
@@ -365,18 +365,37 @@ w_1^{\mathrm{init}} := \left( \operatorname{M}\left[ r^1 \right] \div  M \right)
 With these soft assignments we can begin EM on the M-step.
 
 
+% ==============================================================================
+\subsection{Implementation Considerations}
+
+E-Step MLE of $\theta$ are not closed-form but require iteration.
+We choose closed-form Hessian-based weighted regression.
+Overshooting and step size, stopping criterion, underflow and pruning points, are all real considerations.
+
 \section{Results}
 
-Data
+We started by running a single dataset.
+
+Then more
+
+Then full division
+
 
 \section{Analysis}
 
-Details
+Metrics:
+epsilon
+test/training vs. dataset size
+$E[Pr{datapoint}]$
+$M_count$
+
+``Battier is known as..., but was -18 total in the 5 games he played against the southwest in 2008-2009, which is reflected in our results as...''
 
 \section{Conclusions}
 
-Done
-
+Bayesian prior/smoothing
+Coach skill
+More binary response models
 
 \section{References}
 %\small{
