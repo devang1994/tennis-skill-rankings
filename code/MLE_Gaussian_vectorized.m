@@ -16,17 +16,24 @@ function [theta,i] = MLE_Gaussian_vectorized(X,y,w,SIGMA,theta_init)
 % newton-raphson on the probit function
 % returns theta as a column vector
 MAX_ITERS = 100;
+SIGMA_EPS_STOP = 1e-10;
 STOPPING_EPS = 1e-6; % For stopping criteria
-PRUNING_EPS = STOPPING_EPS *STOPPING_EPS; % To avoid dividing by zero
+PRUNING_EPS = STOPPING_EPS*STOPPING_EPS; % To avoid dividing by zero
 
 % X = [ones(size(X,1),1) X]; %no need to add an intercept, just take X as passed in to the function
 p = size(X,1);
 n = size(X,2);
 theta = theta_init;
-	lambda = 1;
-ll(1) = (sum(w(1:p/2).*log(1-normcdf(X(1:p/2,:)*theta,0,SIGMA))) + sum(w(p/2+1:end).*log(normcdf(X(p/2+1:end,:)*theta,0,SIGMA))));
+
+step_size = 1.0;
+theta_prev = nan(size(theta));
+ll_prev = -inf(size(y));
 
 for i=1:MAX_ITERS
+	
+	%==============================
+	%   Precompute useful values
+	%==============================
 	
 	xjtheta_all = X*theta;
 	assert(size(xjtheta_all,1) == p)
@@ -35,10 +42,61 @@ for i=1:MAX_ITERS
 	cdf_all = normcdf(xjtheta_all,0,SIGMA);
 	negcdf_all = normcdf(-xjtheta_all,0,SIGMA);
 	
-	% Pruned datapoints will be fine.
-	% They have so much functional margin we don't realistically need to worry about them.
+	%========================================
+	%   Remove points that cause underflow
+	%========================================
 	
-	prune_training_points = ~((cdf_all <= PRUNING_EPS*negcdf_all) | (negcdf_all <= PRUNING_EPS*cdf_all));
+	% For numerical stability we prune datapoints that have such a bad functional margin that they probably can't be satisfied
+	% e.g. y == 0 and probit(theta*x) --> 1
+	%        or
+	%      y == 1 and probit(theta*x) --> 0
+	%
+	% Also, we don't need datapoints with so much functional margin that they leave no influence on the gradient
+	% e.g. y == 0 and probit(theta*x) --> 0
+	%        or
+	%      y == 1 and probit(theta*x) --> 1
+	% Especially because of the way MLE_Gaussian is computed, this avoids divide-by-zeros later on.
+	
+	prune_training_points = ~(negcdf_all <= PRUNING_EPS) & ~(cdf_all <= PRUNING_EPS);
+	
+	%=======================================================
+	%   Check log-likelihood for overshoot or convergence
+	%=======================================================
+	
+	% We have to check for overshoot here.
+	% Remember to avoid underflow when doing this! Use prune_training_points
+	% New LL = \prod_{{x,y}} (1 - probit(theta' * X))^M[y^0,X] * (probit(theta' * X))^M[y^1,X]
+	ll_new = nan(size(y));
+	ll_new(y==1) = w(y==1) .* log(cdf_all(y==1));
+	ll_new(y==0) = w(y==0) .* log(negcdf_all(y==0));
+	
+	% Now, use ll_new_total and ll_prev_total to detect:
+	%  1. Stop criterion
+	%  2. Overshoot
+	ll_new_total = sum(ll_new(prune_training_points));
+	ll_prev_total = sum(ll_prev(prune_training_points));
+	
+	if abs(ll_new_total - ll_prev_total)/p < SIGMA_EPS_STOP
+		break
+	elseif ll_new_total < ll_prev_total
+		disp(['Overshoot on iteration ' num2str(i) '!'])
+		disp(ll_prev_total)
+		disp(ll_new_total)
+		ll_prev = -inf(size(y)); % reset this. When you go back through ll_prev will be set to ll_new which should be the same ll_prev you had when you did the overshoot in the first place.
+		theta = theta_prev;
+		step_size = step_size * 0.5;
+		disp(['step size reduced to ' num2str(step_size)]);
+		%keyboard
+		continue;
+	end
+	ll_prev = ll_new;
+	theta_prev = theta;
+	
+	
+	%=================================
+	%   Perform Newton-Raphson step
+	%=================================
+	
 	
 	% Compute in parallel
 	pdf_j = normpdf(xjtheta_all(prune_training_points),0,SIGMA);
@@ -58,7 +116,8 @@ for i=1:MAX_ITERS
 	%
 	% Rows of the original X are multiplied by each element of (y_pdf_cdf_j - yneg_pdf_negcdf_j).
 	% Then, transpose to return a column vector at the end
-	grad = X(prune_training_points,:)' * ((y_pdf_cdf_j - yneg_pdf_negcdf_j) .* w(prune_training_points)); % grad = grad + w(j) * X(j,:)'*(y_pdf_cdf(j) - yneg_pdf_negcdf(j)); 
+	X_pruned = X(prune_training_points,:);
+	grad = X_pruned' * ((y_pdf_cdf_j - yneg_pdf_negcdf_j) .* w(prune_training_points)); % grad = grad + w(j) * X(j,:)'*(y_pdf_cdf(j) - yneg_pdf_negcdf(j)); 
 	
 	
 	H_inside_coeff = w(prune_training_points) .* (y_pdf_cdf_j.*(1 + pdf_cdf_j) + yneg_pdf_negcdf_j.*(1 + pdf_negcdf_j));
@@ -72,34 +131,32 @@ for i=1:MAX_ITERS
 	%	    \sum X(j,:)'*w(j)*X(j,:) = X' * (w .* X)
 	%	                                     bsxfun
 
-	H = - X(prune_training_points,:)' * bsxfun(@times,X(prune_training_points,:),H_inside_coeff); % H = H - w(j) * (y_pdf_cdf(j)*(1 + pdf_cdf_j(j)) + yneg_pdf_negcdf(j)*(1 + pdf_negcdf_j(j))) * (X(j,:)'*X(j,:)); 
+	H = - X_pruned' * bsxfun(@times,X_pruned,H_inside_coeff); % H = H - w(j) * (y_pdf_cdf(j)*(1 + pdf_cdf_j(j)) + yneg_pdf_negcdf(j)*(1 + pdf_negcdf_j(j))) * (X(j,:)'*X(j,:)); 
 	
 	if i >= 1
 		% In general, Hessian is the optimal step size
 		update_step = - pinv(H) * grad;
 	else
-		% No Hessian for initial step
-		US = X(prune_training_points,:)' * bsxfun(@times,X(prune_training_points,:),w(prune_training_points));
+		% No Hessian for initial step, help move toward global optimum
+		US = X_pruned' * bsxfun(@times,X_pruned,w(prune_training_points));
 		update_step = - pinv(US) * grad;
 	end
-	theta = theta + lambda*update_step;
 	
-	ll(i+1) = (sum(w(1:p/2).*log(1-normcdf(X(1:p/2,:)*theta,0,SIGMA))) + sum(w(p/2+1:end).*log(normcdf(X(p/2+1:end,:)*theta,0,SIGMA))));
-	while (ll(1,i+1) < ll(1,i) && lambda > STOPPING_EPS)
-		theta = theta - lambda*update_step;
-		lambda = lambda/2;
-		theta = theta + lambda*update_step;
-		ll(i+1) = (sum(w(1:p/2).*log(1-normcdf(X(1:p/2,:)*theta,0,SIGMA))) + sum(w(p/2+1:end).*log(normcdf(X(p/2+1:end,:)*theta,0,SIGMA))));
+	if any(isnan(update_step))
+		keyboard
 	end
 	
-	if lambda < STOPPING_EPS
-		theta = theta - lambda*update_step;
+	theta = theta + step_size*update_step;
+	
+	if any(isnan(theta))
+		keyboard
 	end
 	
-	if max(abs(lambda*update_step))/SIGMA < STOPPING_EPS
+	%===========================
+	%   Check for convergence
+	%===========================
+	
+	if max(abs(step_size*update_step))/SIGMA < STOPPING_EPS
 		break
 	end
 end
-%if lambda < 1
-%	lambda
-%end

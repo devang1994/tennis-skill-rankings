@@ -1,4 +1,4 @@
-function display_output(names, theta, ll, epsilon, title, isgaussian)
+function display_output(names, theta, ll, epsilon, title, M, isgaussian)
 
 P = length(names);
 assert(size(theta,2) == P*2)
@@ -26,6 +26,7 @@ disp('');
 disp('===========================================================');
 disp(title)
 disp(['after ' num2str(length(ll)) ' EM iterations log-likelihood = ' num2str(ll(end))])
+disp(['          i.e. E[Prb{Datapoint}] = ' num2str(exp(ll(end)/M)) ])
 epsilon,
 disp('');
 disp('          offense                    defense');
