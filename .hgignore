@@ -1,7 +1,8 @@
 # LaTeX temporary files
-relre:^report/report.(aux|log|synctex.gz|bbl|blg)
+relre:^report/report\.(aux|log|synctex\.gz|bbl|blg)
 
 # Data files generated using createdata.*.sh.bat
-relre:^code/D_C_(defense|offense).csv
-relre:^code/D_r.csv
-relre:^code/loaddata.m
+relre:^code/D_C_(defense|offense)\.csv
+relre:^code/D_r\.csv
+relre:^code/loaddata\.m
+relre:^code/threeteam\.(test|training)

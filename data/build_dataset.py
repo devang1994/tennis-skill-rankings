@@ -427,7 +427,7 @@ with open("D_C_defense.csv", "w") as f:
 # Write #3
 print("Writing loaddata.m ...")
 with open('loaddata.m', "w") as f:
-    f.write("player_names = {" + ','.join("'" + p + "'" for p in fixed_player_order) + "};\n")
+    f.write("player_names = {" + ','.join("'" + p.replace("'", '') + "'" for p in fixed_player_order) + "};\n")
 
     f.write("% This file came from:\n")
     for fname in filenames:
