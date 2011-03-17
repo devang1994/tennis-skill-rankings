@@ -130,7 +130,7 @@ for m=1:M
 		p = sum(soft_assignments,2);
 		p = p / sum(p); % a column vector
 		
-		R_softassignments(m,:) = soft_assignments' * R_schedule;
+		R_softassignments(m,:) = p;
 		R_samples(m) = randsample_fromweights(0:3,R_softassignments(m,:));
 	end
 
