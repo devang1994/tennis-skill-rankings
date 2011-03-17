@@ -143,10 +143,13 @@ A\left(\mathrm{Skills}\right) \tridefeq \sum_i  \left( \textrm{Off. Team, Player
 \[
 B\left(\mathrm{Skills}\right) \tridefeq  \sum_i \left(  \textrm{Def. Team, Player i Def. Skill } k \right) * C_i
 \]%
-where
-\[
-C_i = binary value indicating whether player i is on-court
-\]%
+where $C_i$ is the $i^{\mathrm{th}}$ element of the vector $\vec C$.
+$\vec C$ is a vector of indicator functions.
+%\[
+%C_i = binary value indicating whether player i is on-court
+%\]%
+For any particular possession, exactly ten elements of $\vec C$ are 1 (there are ten basketball players on the court at once). All the other elements are zero.
+
 
 On each possession, there are three binary hidden random variables defined by a probability function with parameters that we will learn. In particular, each of the ``Win'' random variables depends on the corresponding skills of players on court as input (which are learned):
 \begin{enumerate}
@@ -426,6 +429,11 @@ points per possession (over 788 possession) for the possessions in the test set.
 The actual number of points scored in the test set was 1.0178, which indicates that the model is accounting for player skills.
 
 
+
+Prediction against test
+\begin{center}
+	\includegraphics[width=0.99\linewidth]{figures/Rplot}
+\end{center}
 
 
 %$\Elin{\operatorname{E}_{\mathrm{training}}\left[R|C\right]$ is 
