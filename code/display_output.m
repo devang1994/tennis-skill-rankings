@@ -27,7 +27,7 @@ disp('===========================================================');
 disp(title)
 disp(['after ' num2str(length(converged.log_likelihood)) ' EM iterations log-likelihood = ' num2str(converged.log_likelihood(end))])
 disp(['          i.e. E[Prb{Datapoint}] = ' num2str(exp(converged.log_likelihood(end)/M)) ])
-converged.epsilon,
+disp(['epsilon = ' num2str(converged.epsilon)])
 disp('');
 disp('          offense                    defense');
 disp('   1pt      2pt      3pt      1pt      2pt      3pt');
