@@ -145,10 +145,10 @@ else
 end
 
 prediction_histogram = sum(R_softassignments)',
-prediction_ppp = (0:3) * prediction_histogram,
+prediction_ppp = (0:3) * prediction_histogram / sum(prediction_histogram),
 
 sample_histogram = test_histogram = sum(bsxfun(@eq,R_samples,0:3))',
-sample_ppp = (0:3) * sample_histogram,
+sample_ppp = (0:3) * sample_histogram / sum(sample_histogram),
 
 test_histogram = sum(bsxfun(@eq,test_dataset(:,1),0:3))',
-test_ppp = (0:3) * test_histogram,
+test_ppp = (0:3) * test_histogram / sum(test_histogram),
