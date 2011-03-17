@@ -1,11 +1,23 @@
-function [Theta log_likelihood epsilon] = basketball_network_EM(dataset, MAX_ITER, gaussian)
-
+function [result_struct] = basketball_network_EM(dataset, MAX_ITER, gaussian, first_step)
+%
+% Returns struct with fields:
+%   result_struct.Theta (converged)
+%   result_struct.epsilon (converged)
+%   result_struct.log_likelihood
+%
 % dataset is MxL, where M is number of possessions,
 % and L is P*2 (for O and D, where P is the number of players).
 % Note that if we just have one set of O and D teams, ie DET O and CLE D,
 % we only need 24 elements, not 48, since our dataset
 % doesn't deal with CLE O and DET D
 % gaussian is true if we use MLE_Gaussian, false for logistic
+% first_step is either 'e', 'm', 'E' or 'M', indicating whether to:
+%   E: assume an initial (heuristic) soft assignment and run E-Step first (this is the default)
+%   M: assume initial parameters (all skills are equal) and run M-Step first
+%   e: assume a random soft assignment and run E-Step first
+%   m: assume initial parameters randomly and run M-Step first
+assert(first_step == 'E' || first_step == 'M')
+
 
 if gaussian
 	SIGMA = sqrt(10),
@@ -42,6 +54,10 @@ E_D_schedule = logical([
 %We have L-1 thetas because there is one theta for every player.
 %L is the number of columns in the dataset, but one of the columns is R
 Theta = zeros(3, L-1); % With no prior information, initialize to zeros (we used to start at all zeroes on every call to mle_logistic anyway)
+% If skills are all even (Pr{Win} == 0.5), this would be epsilon:
+epsilon = (sum(dataset(:,1) == 0)/8 + sum(dataset(:,1) == 1)/8 + sum(dataset(:,1) == 2)/4 + sum(dataset(:,1) == 2)/2)/M/3;
+% If first_step == 'M', these initialization values will determine which local optima we reach.
+% If first_step == 'E', presumably these will both be overwritten during the first E-step.
 
 %========================
 %   Begin EM Algorithm
@@ -67,96 +83,127 @@ for k=1:8
         E_D(:,k) = joint_probability;
 end
 
-% Normalize E_D. Each row should sum to 1.0
-E_D = bsxfun(@rdivide,E_D,sum(E_D,2));
-
-OldProb = E_D;
-
 W_init,
 M_count,
 M,
 
+
+%======================================
+%   Random initialization strategies
+%======================================
+if first_step == 'm'
+	epsilon = rand / 3; %epsilon can't be greater than 1/3
+	Theta = (rand(size(theta)) - 0.5)*sqrt(12); % mle_logistic and MLE_Gaussian assume unit variance, the width of a unit-variance uniform distribution is sqrt(12)
+	first_step = 'M';
+elseif first_step == 'e'
+	E_D = rand(size(E_D)); % This is unnormalized, but we'll normalize it just before starting the EM loop.
+	first_step = 'E';
+end
+
+
+% Normalize E_D. Each row should sum to 1.0
+% CAUTION: If first_step was 'e', we rely on this normalization being here rather than earlier!
+E_D = bsxfun(@rdivide,E_D,sum(E_D,2));
+OldProb = E_D;
+
+if first_step == 'M'
+	disp('Initialization:')
+	epsilon,
+	Theta,
+elseif first_step == 'E'
+	disp('Initialization:')
+	E_D,
+else
+	assert(false)
+end
+
 for j = 1:MAX_ITER
 
-	%============
-	%   M-Step
-	%============
+	% At this point in the loop, we have soft assignments
+	% E_D,
 
-	%dbstop if naninf
-	%E_D,
-
-	% Collection of sufficient statistics for epsilon
-	% We need four counts.
-	% M[r^3,w_3^1]:
-	%   dataset(:,1) == 3
-	%   E_D_schedule(:,3) == true
-	M_r3_w3 = sum(sum(E_D(dataset(:,1) == 3, E_D_schedule(:,3)')));
-	% M[r^2,w_3^0,w_2^1]:
-	%   dataset(:,1) == 2
-	%   E_D_schedule(:,3) == false
-	%   E_D_schedule(:,2) == true
-	M_r2_l3_w2 = sum(sum(E_D(dataset(:,1) == 2, E_D_schedule(:,2)' & ~E_D_schedule(:,3)')));
-	% M[r^1,w_3^0,w_2^0,w_1^1]:
-	%   dataset(:,1) == 1
-	%   E_D_schedule(:,3) == false
-	%   E_D_schedule(:,2) == false
-	%   E_D_schedule(:,1) == true
-	M_r1_l3_l2_w1 = sum(sum(E_D(dataset(:,1) == 1, E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)')));
-	% M[r^1,w_3^0,w_2^0,w_1^0]:
-	%   dataset(:,1) == 1
-	%   E_D_schedule(:,3) == false
-	%   E_D_schedule(:,2) == false
-	%   E_D_schedule(:,1) == false
-	M_r0_l3_l2_l1 = sum(sum(E_D(dataset(:,1) == 0, ~E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)')));
-
-	M_modelled = M_r3_w3 + M_r2_l3_w2 + M_r1_l3_l2_w1 + M_r0_l3_l2_l1;
-	M_noise = M - M_modelled;
-
-	%============
-	%   E-Step
-	%============
-
-	for i = 1:3
-		% theta_init is a column vector
-		theta_init = Theta(i,:)';
-
-		X = [dataset(:,2:end); dataset(:,2:end)];
-		y = [zeros(M,1); ones(M,1)];
+	if ~(first_step == 'M' && j == 1) % skip first E-step if we prefer to initialize parameters
 		
-		% For each datapoint (each row), compute:
-		%   How many of the eight soft-datapoints have W_i == false?
-		pr_wi_false = sum(E_D(:,~E_D_schedule(:,i)'),2);
-		%   How many of the eight soft-datapoints have W_i == true?
-		pr_wi_true  = sum(E_D(:, E_D_schedule(:,i)'),2);
+		%============
+		%   E-Step (epsilon)
+		%============
 
-		% Do weighted parameter estimation for W_i, go!
-		weights = [pr_wi_false; pr_wi_true];
+		% Collection of sufficient statistics for epsilon
+		% We need four counts.
+		% M[r^3,w_3^1]:
+		%   dataset(:,1) == 3
+		%   E_D_schedule(:,3) == true
+		M_r3_w3 = sum(sum(E_D(dataset(:,1) == 3, E_D_schedule(:,3)')));
+		% M[r^2,w_3^0,w_2^1]:
+		%   dataset(:,1) == 2
+		%   E_D_schedule(:,3) == false
+		%   E_D_schedule(:,2) == true
+		M_r2_l3_w2 = sum(sum(E_D(dataset(:,1) == 2, E_D_schedule(:,2)' & ~E_D_schedule(:,3)')));
+		% M[r^1,w_3^0,w_2^0,w_1^1]:
+		%   dataset(:,1) == 1
+		%   E_D_schedule(:,3) == false
+		%   E_D_schedule(:,2) == false
+		%   E_D_schedule(:,1) == true
+		M_r1_l3_l2_w1 = sum(sum(E_D(dataset(:,1) == 1, E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)')));
+		% M[r^1,w_3^0,w_2^0,w_1^0]:
+		%   dataset(:,1) == 1
+		%   E_D_schedule(:,3) == false
+		%   E_D_schedule(:,2) == false
+		%   E_D_schedule(:,1) == false
+		M_r0_l3_l2_l1 = sum(sum(E_D(dataset(:,1) == 0, ~E_D_schedule(:,1)' & ~E_D_schedule(:,2)' & ~E_D_schedule(:,3)')));
+
+		M_modelled = M_r3_w3 + M_r2_l3_w2 + M_r1_l3_l2_w1 + M_r0_l3_l2_l1;
+		M_noise = M - M_modelled;
 		
-		if gaussian
-			% TODO: We don't need sigma in the same way we don't need an intercept term
-			%       What changes need to be made to MLE_Gaussian so that it uses a constant sigma?
-			% TODO: Reformulate the Gaussian to accept weighted datapoints
-			[theta_w_i itersneeded] = MLE_Gaussian_vectorized(X,y,weights,SIGMA,theta_init);
-		else
+		% Parameter estimation for epsilon (that was easy)
+		epsilon = M_noise / (3*M);
+		
+		%============
+		%   E-Step (theta)
+		%============
+		
+		% For a unique soft-assignment, there is a unique global optimum for MLE_Gaussian (or mle_logistic) to converge to.
+		% Although we carry over a previous Theta to improve runtime, it does not influence the final result of MLE_Gaussian (or mle_logistic)
+		
+		for i = 1:3
+			% theta_init is a column vector
+			theta_init = Theta(i,:)';
+
 			% There are two soft-datapoints for each actual datapoint.
 			% i.e. one with W_i == true and one with W_i == false
-			[theta_w_i itersneeded] = mle_logistic_vectorized(X,y,weights,theta_init);
+			X = [dataset(:,2:end); dataset(:,2:end)];
+			y = [zeros(M,1); ones(M,1)];
+			
+			% For each datapoint (each row), compute:
+			%   How many of the eight soft-datapoints have W_i == false?
+			pr_wi_false = sum(E_D(:,~E_D_schedule(:,i)'),2);
+			%   How many of the eight soft-datapoints have W_i == true?
+			pr_wi_true  = sum(E_D(:, E_D_schedule(:,i)'),2);
+
+			% Do weighted parameter estimation for W_i, go!
+			weights = [pr_wi_false; pr_wi_true];
+			
+			if gaussian
+				% We don't need sigma in the same way we don't need an intercept term
+				[theta_w_i itersneeded] = MLE_Gaussian_vectorized(X,y,weights,SIGMA,theta_init);
+			else
+				[theta_w_i itersneeded] = mle_logistic_vectorized(X,y,weights,theta_init);
+			end
+			
+			disp(['    MLE iterations: ' num2str(itersneeded)]);
+			if any(isnan(theta_w_i))
+				keyboard
+			end
+			
+			% theta_w_i is returned as a column vector
+			Theta(i,:) = theta_w_i';
 		end
-		
-		disp(['    MLE iterations: ' num2str(itersneeded)]);
-		if any(isnan(theta_w_i))
-			keyboard
-		end
-		
-		% theta_w_i is returned as a column vector
-		Theta(i,:) = theta_w_i';
 	end
 
-	% Parameter estimation for epsilon (that was easy)
-	epsilon = M_noise / (3*M);
-
+	% At this point in the loop, we have new parameters
+	
 	%=====================
-	%   Soft-Assignment (and calculation of log_likelihood)
+	%   Soft-Assignment (M-Step and calculation of log_likelihood)
 	%=====================
 	log_likelihood(j) = 0;
 
@@ -218,6 +265,8 @@ for j = 1:MAX_ITER
 		log_likelihood(j) = log_likelihood(j) + log(sum(soft_assignments));
 	end
 
+	% At this point in the loop, we have new soft assignments we can compare with the old soft assignments
+	
 	%======================
 	%   Stopping Critera
 	%======================
@@ -238,3 +287,6 @@ for j = 1:MAX_ITER
 	OldProb = E_D;
 
 end
+
+
+result_struct = struct('Theta', Theta, 'epsilon', epsilon, 'log_likelihood', log_likelihood);

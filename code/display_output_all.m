@@ -2,10 +2,31 @@
 % PRINT OUTPUT
 M_count = sum(bsxfun(@eq,dataset(:,1),0:3))',
 
-if exist('Theta_BradleyTerry','var')
-	display_output(player_names, Theta_BradleyTerry, loglikelihood_BradleyTerry, epsilon_BradleyTerry, 'Bradley-Terry (logit):', sum(M_count), false)
+players = struct('M', sum(M_count), 'possessions', sum(dataset(:,2:end))');
+players.names = player_names;
+
+disp('Table of Contents')
+disp('  LOGISTIC/logit')
+disp('    Choose E_D soft-assignment, start with E-step')
+disp('    Choose parameter values, start with M-step')
+disp('  GAUSSIAN/probit')
+disp('    Choose E_D soft-assignment, start with E-step')
+disp('    Choose parameter values, start with M-step')
+
+
+if exist('BradleyTerry_softassignments','var')
+	display_output(players, BradleyTerry_softassignments, 'Bradley-Terry (logit) soft-assignment initialization:', false);
+end
+if exist('BradleyTerry_parameters','var')
+	display_output(players, BradleyTerry_parameters, 'Bradley-Terry (logit) parameter initialization:', false);
 end
 
-if exist('Theta_ThurstoneCaseV','var')
-	display_output(player_names, Theta_ThurstoneCaseV, loglikelihood_ThurstoneCaseV, epsilon_ThurstoneCaseV, 'Thurstone Case V (Hessian probit):', sum(M_count), true)
+if exist('ThurstoneCaseV_softassignments','var')
+	display_output(players, ThurstoneCaseV_softassignments, 'Thurstone Case V (probit) soft-assignment initialization:', true);
 end
+if exist('ThurstoneCaseV_parameters','var')
+	display_output(players, ThurstoneCaseV_parameters, 'Thurstone Case V (probit) parameter initialization:', true);
+end
+
+
+

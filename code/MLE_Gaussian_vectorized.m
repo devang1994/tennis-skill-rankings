@@ -17,8 +17,10 @@ function [theta,i] = MLE_Gaussian_vectorized(X,y,w,SIGMA,theta_init)
 % returns theta as a column vector
 MAX_ITERS = 100;
 SIGMA_EPS_STOP = 1e-10;
-STOPPING_EPS = 1e-6; % For stopping criteria
-PRUNING_EPS = STOPPING_EPS*STOPPING_EPS; % To avoid dividing by zero
+STOPPING_EPS = 1e-6;
+PRUNING_EPS = STOPPING_EPS * STOPPING_EPS;
+
+assert(0.5.^MAX_ITERS < STOPPING_EPS)
 
 % X = [ones(size(X,1),1) X]; %no need to add an intercept, just take X as passed in to the function
 p = size(X,1);
@@ -28,8 +30,10 @@ theta = theta_init;
 step_size = 1.0;
 theta_prev = nan(size(theta));
 ll_prev = -inf(size(y));
+update_step = zeros(size(theta));
 
 for i=1:MAX_ITERS
+	theta = theta + step_size*update_step;
 	
 	%==============================
 	%   Precompute useful values
@@ -82,10 +86,16 @@ for i=1:MAX_ITERS
 		disp(['Overshoot on iteration ' num2str(i) '!'])
 		disp(ll_prev_total)
 		disp(ll_new_total)
-		ll_prev = -inf(size(y)); % reset this. When you go back through ll_prev will be set to ll_new which should be the same ll_prev you had when you did the overshoot in the first place.
-		theta = theta_prev;
 		step_size = step_size * 0.5;
 		disp(['step size reduced to ' num2str(step_size)]);
+		
+		
+		% reset this. When you go back through ll_prev will be set to ll_new which should be the same ll_prev you had when you did the overshoot in the first place.
+		theta = theta_prev;
+		ll_prev = -inf(size(y)); 
+		update_step = zeros(size(theta));
+		
+		
 		%keyboard
 		continue;
 	end
@@ -94,7 +104,7 @@ for i=1:MAX_ITERS
 	
 	
 	%=================================
-	%   Perform Newton-Raphson step
+	%   Compute Newton-Raphson step
 	%=================================
 	
 	
@@ -119,7 +129,8 @@ for i=1:MAX_ITERS
 	X_pruned = X(prune_training_points,:);
 	grad = X_pruned' * ((y_pdf_cdf_j - yneg_pdf_negcdf_j) .* w(prune_training_points)); % grad = grad + w(j) * X(j,:)'*(y_pdf_cdf(j) - yneg_pdf_negcdf(j)); 
 	
-	
+
+	% In general, Hessian is the optimal step size
 	H_inside_coeff = w(prune_training_points) .* (y_pdf_cdf_j.*(1 + pdf_cdf_j) + yneg_pdf_negcdf_j.*(1 + pdf_negcdf_j));
 	% H = H - w(j).* (y(j)*(pdf/cdf + pdf^2/cdf^2)         + (1-y(j))*(pdf^2/negcdf^2 + pdf/negcdf)      ) * X(j,:)'*X(j,:);
 	% H = H - w(j).* (  y(j)*(1 + pdf/cdf)*pdf/cdf         + (1-y(j))*(1 + pdf/negcdf)*pdf/negcdf        ) * X(j,:)'*X(j,:);
@@ -130,18 +141,10 @@ for i=1:MAX_ITERS
 	%	So: \sum X(j,:)'*X(j,:) = X' * X
 	%	    \sum X(j,:)'*w(j)*X(j,:) = X' * (w .* X)
 	%	                                     bsxfun
-
 	H = - X_pruned' * bsxfun(@times,X_pruned,H_inside_coeff); % H = H - w(j) * (y_pdf_cdf(j)*(1 + pdf_cdf_j(j)) + yneg_pdf_negcdf(j)*(1 + pdf_negcdf_j(j))) * (X(j,:)'*X(j,:)); 
-	
 	update_step = - pinv(H) * grad;
 	
 	if any(isnan(update_step))
-		keyboard
-	end
-	
-	theta = theta + step_size*update_step;
-	
-	if any(isnan(theta))
 		keyboard
 	end
 	

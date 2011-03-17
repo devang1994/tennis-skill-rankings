@@ -26,6 +26,8 @@ SIGMA_EPS_STOP = 1e-10;
 STOPPING_EPS = 1e-6;
 PRUNING_EPS = STOPPING_EPS * STOPPING_EPS;
 
+assert(0.5.^MAX_ITERS < STOPPING_EPS)
+
 % X = [ones(size(X,1),1) X]; %no need to add an intercept, just take X as passed in to the function
 p = size(X,1);
 n = size(X,2);
@@ -33,9 +35,12 @@ theta = theta_init;
 
 step_size = 1.0;
 theta_prev = nan(size(theta));
+
 ll_prev = -inf(size(y));
+update_step = zeros(size(theta));
 
 for i=1:MAX_ITERS
+	theta = theta + step_size*update_step;
 	
 	%==============================
 	%   Precompute useful values
@@ -83,10 +88,16 @@ for i=1:MAX_ITERS
 		disp(['Overshoot on iteration ' num2str(i) '!'])
 		disp(ll_prev_total)
 		disp(ll_new_total)
-		ll_prev = -inf(size(y)); % reset this. When you go back through ll_prev will be set to ll_new which should be the same ll_prev you had when you did the overshoot in the first place.
-		theta = theta_prev;
 		step_size = step_size * 0.5;
 		disp(['step size reduced to ' num2str(step_size)]);
+		
+		
+		% reset this. When you go back through ll_prev will be set to ll_new which should be the same ll_prev you had when you did the overshoot in the first place.
+		theta = theta_prev;
+		ll_prev = -inf(size(y)); 
+		update_step = zeros(size(theta));
+		
+		
 		%keyboard
 		continue;
 	end
@@ -94,7 +105,7 @@ for i=1:MAX_ITERS
 	theta_prev = theta;
 	
 	%=================================
-	%   Perform Newton-Raphson step
+	%   Compute Newton-Raphson step
 	%=================================
 	
 	% grad = grad + w(j) * X(j,:)'*(y(j) - hxj);
@@ -118,7 +129,6 @@ for i=1:MAX_ITERS
 	H = - X_pruned' * bsxfun(@times,X_pruned,H_inside_coeff);
 
 	update_step = - pinv(H) * grad;
-	theta = theta + step_size*update_step;
 	
 	%===========================
 	%   Check for convergence
