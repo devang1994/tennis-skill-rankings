@@ -37,16 +37,15 @@ disp('   1pt      2pt      3pt      1pt      2pt      3pt          (num. possess
 for player_rank=1:P
 	n = skill2_order(player_rank);
 	matrix_str = num2str([0;theta_scaled(:,n);theta_scaled(:,P+n)]','% 7.3f  ');
-	disp([matrix_str(:,7:end) '    ' roster.names{n} '(' num2str(total_possessions(n)) ')']);
+	disp([matrix_str(:,7:end) '   ' roster.names{n} '(' num2str(total_possessions(n)) ')']);
 end
 
 RESCALE_EFFECTIVE_SIGMA,
 
 % for player_rank=1:(P-1)
 	% n1 = skill2_order(player_rank);
-	% n2 = skill2_order(player_rank+1);
-	% p1_delta = 5*(converged.Theta(:,n1)   + converged.Theta(:,P+n1));
-	% p2_delta = 5*(converged.Theta(:,n2) + converged.Theta(:,P+n2));
+	% p1_delta = 5*converged.Theta(:,n1);
+	% p2_delta = 5*converged.Theta(:,P+n1);
 	% if isgaussian
 		% p1_w = normcdf(p1_delta,0,PPP_SIGMA);
 		% p2_w = normcdf(p2_delta,0,PPP_SIGMA);
@@ -56,5 +55,5 @@ RESCALE_EFFECTIVE_SIGMA,
 	% end
 	% p1_ppp = 3*p1_w(3) + 2*(1-p1_w(3))*p1_w(2) + (1-p1_w(3))*(1-p1_w(2))*p1_w(1);
 	% p2_ppp = 3*p2_w(3) + 2*(1-p2_w(3))*p2_w(2) + (1-p2_w(3))*(1-p2_w(2))*p2_w(1);
-	% disp(['5× ' roster.names{n1} ' vs. ' roster.names{n2} ': ' num2str(p1_ppp) '-' num2str(p2_ppp) ' per possession']);
+	% disp(['5× ' roster.names{n1} ': ' num2str(p1_ppp) ' offense, ' num2str(p2_ppp) ' defense, per possession']);
 % end
