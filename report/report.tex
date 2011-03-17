@@ -134,6 +134,7 @@ Having a multinomial outcome makes it difficult to directly compare logistic vs.
 
 % ==============================================================================
 \subsection{Proposed Network}
+\label{sec:goodnetwork}
 
 To address some of the shortcomings discussed in {\bf Section~\ref{sec:badnetwork}}, we propose the following:
 \begin{center}
@@ -234,21 +235,28 @@ The better our model fits the actual flow of the game, the smaller $\varepsilon$
 
 \section{Implemention}
 
-Maximum Likelihood starts with:
+We will perform Parameter Estimation with Missing Data.
+Each player's skill is treated as a fixed parameter of the \emph{Win} CPDs.
+$\varepsilon$ is also a parameter.
+Each possession from our dataset is treated as an i.i.d. observation from the joint distribution of the entire network.
+{\bf Result} and {\bf OnCourt} are always observed, \emph{Win 1}, \emph{Win 2}, and \emph{Win 3} are always missing/hidden.
+
+The general algorithm, then, consists of iteratively maximizing:
+%Maximum Likelihood starts with:
 \begin{align*}
 L &= \prod_{\mathcal{D}} \prb{\mathcal{D} \mid \vec \theta_1,\vec \theta_2,\vec \theta_3, \varepsilon}
 \\ &=
 \prod_{\mathcal{D}}
 \sum_{\substack{w_1 \in \operatorname{Val}\left(W_1\right) \\ w_2 \in \operatorname{Val}\left(W_2\right) \\ w_3 \in \operatorname{Val}\left(W_3\right)}}
-\\ & \quad \quad \prb{R = \mathcal{D}_r, W_1 = w_1, W_2 = w_2, W_3 = w_3 \mid \vec \theta_1,\vec \theta_2,\vec \theta_3, \varepsilon}
+\\ & \quad \quad \prb{R = \mathcal{D}_r, W_1 = w_1, W_2 = w_2, W_3 = w_3, \mathcal{D}_C \mid \vec \theta_1,\vec \theta_2,\vec \theta_3, \varepsilon}
 \end{align*}%
 \begin{align*}
 = \prod_{\mathcal{D}}
  & \sum_{\substack{w_1 \in \operatorname{Val}\left(W_1\right) \\ w_2 \in \operatorname{Val}\left(W_2\right) \\ w_3 \in \operatorname{Val}\left(W_3\right)}}
-\\ & \prb{R = \mathcal{D}_r \mid W_1 = w_1, W_2 = w_2, W_3 = w_3, \cancel{ \vec \theta_1,\vec \theta_2,\vec \theta_3}, \varepsilon}
-\\ & \prb{W_1 = w_1 \mid \vec \theta_1, \cancel{\vec \theta_2,\vec \theta_3, \varepsilon}}
-\\ & \prb{W_2 = w_2 \mid \vec \theta_2, \cancel{\vec \theta_1,\vec \theta_3, \varepsilon}}
-\\ & \prb{W_3 = w_3 \mid \vec \theta_3, \cancel{\vec \theta_1,\vec \theta_2, \varepsilon}}
+\\ & \prb{R = \mathcal{D}_r \mid W_1 = w_1, W_2 = w_2, W_3 = w_3, \cancel{ \mathcal{D}_C, \vec \theta_1,\vec \theta_2,\vec \theta_3}, \varepsilon}
+\\ & \prb{W_1 = w_1 \mid  C = \mathcal{D}_c, \vec\theta_1, \cancel{\vec \theta_2,\vec \theta_3, \varepsilon}}
+\\ & \prb{W_2 = w_2 \mid  C = \mathcal{D}_c, \vec\theta_2, \cancel{\vec \theta_1,\vec \theta_3, \varepsilon}}
+\\ & \prb{W_3 = w_3 \mid  C = \mathcal{D}_c, \vec\theta_3, \cancel{\vec \theta_1,\vec \theta_2, \varepsilon}}
 \end{align*}%
 %which provides global decomposition allowing us to log-maximize each section of the network separately:
 %\begin{align*}
@@ -258,19 +266,26 @@ L &= \prod_{\mathcal{D}} \prb{\mathcal{D} \mid \vec \theta_1,\vec \theta_2,\vec 
 %\\ & \left( \prod_{\mathcal{D}} \sum_{w_3} \prb{W_3 = w_3 \mid \vec \theta_3} \right)
 %\end{align*}%
 
-In the M-step, we assume $\mathcal{D}$ has observed $W_1 = \mathcal{D}_1$, $W_2= \mathcal{D}_2$, and $W_3= \mathcal{D}_3$ (after soft assignments during the E-step)
-which provides global decomposition allowing us to log-maximize each section of the network separately:
+In the E-step, we perform inference on the eight possible combinations of \emph{Win 1}, \emph{Win 2}, and \emph{Win 3} and make soft-assignments to each of the eight versions each datapoint.
+
+In the M-step, we perform maximum likelihood estimation of parameters $\vec \theta_1$, $\vec \theta_2$, $\vec \theta_3$, and $\varepsilon$ using the same algorithms as if $\mathcal{D}$ had completely observed $W_1 = \mathcal{D}_1$, $W_2= \mathcal{D}_2$, and $W_3= \mathcal{D}_3$ (weighted by the soft assignments of the E-step).
+
+During the M-step, we can take advantage of global decomposition allowing us to log-maximize each section of the network separately:
 \begin{align*}
-L = & \left( \prod_{\mathcal{D}} \prb{R = \mathcal{D}_r \mid W_1 = \mathcal{D}_1, W_2 = \mathcal{D}_2, W_3 = \mathcal{D}_3, \varepsilon} \right)
-\\ & \left( \prod_{\mathcal{D}} \prb{W_1 = \mathcal{D}_1 \mid \vec \theta_1} \right)
-\\ & \left( \prod_{\mathcal{D}} \prb{W_2 = \mathcal{D}_2 \mid \vec \theta_2} \right)
-\\ & \left( \prod_{\mathcal{D}} \prb{W_3 = \mathcal{D}_3 \mid \vec \theta_3} \right)
+\ell = & \left( \sum_{\mathcal{D}} \ell\left\{R = \mathcal{D}_r \mid W_1 = \mathcal{D}_1, W_2 = \mathcal{D}_2, W_3 = \mathcal{D}_3, \varepsilon\right\} \right)
+\\ & \left( \sum_{\mathcal{D}} \ell\left\{W_1 = \mathcal{D}_1 \mid C = \mathcal{D}_c, \vec \theta_1\right\} \right)
+\\ & \left( \sum_{\mathcal{D}} \ell\left\{W_2 = \mathcal{D}_2 \mid C = \mathcal{D}_c,\vec \theta_2\right\} \right)
+\\ & \left( \sum_{\mathcal{D}} \ell\left\{W_3 = \mathcal{D}_3 \mid C = \mathcal{D}_c,\vec \theta_3\right\} \right)
 %L = \prb{R = \mathcal{D}_r \mid \mathcal{D}_1, \mathcal{D}_2, \mathcal{D}_3, \varepsilon}
 \end{align*}%
 
+$ C = \mathcal{D}_c$ is the \emph{OnCourt} variable. It is always observed and assumed to have a uniform prior so it cancels out during any $\arg\max$ operation.
+
 % ==============================================================================
 
-\subsection{Maximum Likelihood: $\varepsilon$}
+\subsection{M-Step: Maximum Likelihood $\varepsilon$}
+
+Using the table CPD for from {\bf Section~\ref{sec:badnetwork}} for $ \prb{R = \mathcal{D}_r \mid W_1 = \mathcal{D}_1, W_2 = \mathcal{D}_2, W_3 = \mathcal{D}_3, \varepsilon}$ and collecting like terms, we find:
 \[
 \argmax{\varepsilon}{ \prod_{\mathcal{D}} \prb{R = \mathcal{D}_r \mid W_1 = \mathcal{D}_1, W_2 = \mathcal{D}_2, W_3 = \mathcal{D}_3, \varepsilon}  }
 \]%
@@ -294,27 +309,38 @@ where
 \end{align*}%
 and $ M_{\mathrm noise}$ is a count of the remaining observations such that $M_{\mathrm modelled} + M_{\mathrm noise} = M$, the total number of observations.
 
-% ==============================================================================
-\subsection{Maximum Likelihood: $\theta_i$}
+%The only comment here is that $\mathcal{D}$ has as eight times as many observations, each with roughly 1/8th (varies from datapoint to datapoint) the weight.
 
+% ==============================================================================
+\subsection{M-Step: Maximum Likelihood $\theta_i$}
+
+In this project, we implement the two major pairwise comparison models: Bradley-Terry, and Thurstone Case V.
+
+In Bradley-Terry, each \emph{Win i} random variable follows a logistic distribution.
 Let
 \[
-\prb{W_i = w_i^0 \mid \vec \theta_i}
+\prb{W_i = w_i^0 \mid \vec C, \vec \theta_i}
  \tridefeq \frac{1}
 {1 + \exp\left(\Delta_i \right) }
 \]%
 so that
 \[
-\prb{W_i = w_i^1 \mid \vec \theta_i}
+\prb{W_i = w_i^1 \mid \vec C, \vec \theta_i}
  \tridefeq \frac{1}
 {1 + \exp\left(- \Delta_i \right) }
 \]%
 where
 \[
 \Delta_i \tridefeq
-   \left(\theta_{i,\mathrm{Off.P1}} + \ldots + \theta_{i,\mathrm{Off.P12}}\right)
- + \left(\theta_{i,\mathrm{Def.P1}} + \ldots + \theta_{i,\mathrm{Def.P12}}\right)
+   \left[ \theta_{i,\mathrm{Off.P1}}, \ldots
+% \theta_{i,\mathrm{Off.P12}}\right)
+% + \left(\theta_{i,\mathrm{Def.P1}} + \ldots + 
+,\theta_{i,\mathrm{Def.P12}} 
+%\right)
+\right] \vec C 
 \]%
+and the \emph{OnCourt} variable $\vec C$ is a vector of indicator functions. For any particular possession, exactly ten elements of $\vec C$ are 1 (there are ten basketball players on the court at once). All the other elements are zero.
+
 Without loss of generality, we can assume that the defensive $\theta$s are negative numbers, that reduce the overall $\prb{Win}$ when added.
 (This is simpler than subtracting positive $\theta_{\mathrm{Def}}$ and then having to keep track of positive and negative signs the whole time.)
 
@@ -324,15 +350,17 @@ Now, we wish to compute:
 \]%
 when $W_i$ is fully observed with the solution expressed with respect to sufficient statistics of $\vec \theta_i$.
 
-This reduces to weighted logistic regression.
-We use a weighted variant of the basic Newton-Raphson logistic regression techniques~\cite{statPsuJialiStat597eNotes2Logit}.
+This reduces to logistic regression in general, and weighted logistic regression due to the soft-assignments of the E-step.
+We use a weighted variant of the basic Newton-Raphson logistic regression technique~\cite{statPsuJialiStat597eNotes2Logit}.
 
 
-probit:
-\cite{demidenko2001computational}
-
-
-% TODO(jdhuang): Add the C variable which multiplexes which players are on the court.
+In Thurstone Case V, each \emph{Win i} random variable follows a Gaussian distribution.
+\[
+\prb{W_i = w_i^0 \mid \vec \theta_i} \tridefeq \Phi\left( \Delta_i / \sigma \right)
+\]%
+replaces the logit function with the probit function.
+Again, we use a weighted variant of~\cite{demidenko2001computational}, the basic Newton-Raphson procedure for probit regression.
+Here, $\sigma^2 = 10$ as player performance is assumed to be unit variance, and outcome is the sum of 10 player performances.
 
 % ==============================================================================
 \subsection{Expectation-Maximization: E-step}
