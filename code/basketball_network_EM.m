@@ -1,5 +1,10 @@
-function [Theta log_likelihood epsilon] = basketball_network_EM(dataset, MAX_ITER, gaussian, first_step)
-
+function [result_struct] = basketball_network_EM(dataset, MAX_ITER, gaussian, first_step)
+%
+% Returns struct with fields:
+%   result_struct.Theta (converged)
+%   result_struct.epsilon (converged)
+%   result_struct.log_likelihood
+%
 % dataset is MxL, where M is number of possessions,
 % and L is P*2 (for O and D, where P is the number of players).
 % Note that if we just have one set of O and D teams, ie DET O and CLE D,
@@ -99,6 +104,18 @@ end
 % CAUTION: If first_step was 'e', we rely on this normalization being here rather than earlier!
 E_D = bsxfun(@rdivide,E_D,sum(E_D,2));
 OldProb = E_D;
+
+if first_step == 'M'
+	disp('Initialization:')
+	epsilon,
+	Theta,
+elseif first_step == 'E'
+	disp('Initialization:')
+	E_D,
+else
+	assert(false)
+end
+
 for j = 1:MAX_ITER
 
 	% At this point in the loop, we have soft assignments
@@ -269,3 +286,6 @@ for j = 1:MAX_ITER
 	OldProb = E_D;
 
 end
+
+
+result_struct = struct('Theta', Theta, 'epsilon', epsilon, 'log_likelihood', log_likelihood);
