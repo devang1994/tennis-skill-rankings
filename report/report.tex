@@ -63,6 +63,8 @@ Let's talk about~\cite{herbrich2007trueskilltm}~and~\cite{coulom2008whole} and t
 
 Talk about the history of ELO~\cite{elo1978rating} and Glicko~\cite{glickman1999parameter}, and the ongoing debate between logistic and gaussian (logit vs. probit).
 
+The Elo rating system is used for calculating relative skill levels of players in two-player games, but has been adapted to team sports like soccer, football, basketball, and baseball. The performance of players/teams is inferred from wins, losses, and draws against other players/teams, while depending on the ratings of the opponent and the results scored against them. (Elo also has some mathetmatical issues of that have been addressed through different means). Elo only considers the final score, which is not always indicative of how competitive the game was, and when used for teams, does not consider the players individually. Therefore, our intent is to build a more sophisticated model that determines 6 different skills (3 on offensive and 3 on defense) for each player using Bayesian Networks. By doing so, we can make better inferences on how well these sets of players contribute as a team on each possession and how likely they are to score 0, 1, 2, or 3 points per possession against their opponent. 
+
 Basketball brings two key challenges to the field of Bayesian Skill estimation.
 \begin{itemize}
 \item Results are not binary Win/Lose outcomes.
@@ -80,7 +82,7 @@ Basketball brings two key challenges to the field of Bayesian Skill estimation.
 We model the result of each possession as an independent and identically distributed random variable, \emph{Result}.
 An NBA roster has 12 players, but only five of them are on the court for a given team during any single posession.
 
-To reduce noise, we ignore ``garbage time'' posessions. To simplify the model we will only consider possessions in the first half of games.
+(Are we still doing this?) To reduce noise, we ignore ``garbage time'' posessions. To simplify the model we will only consider possessions in the first half of games.
 
 We begin with a very basic model that follows traditional ``skill ranking'' in the sense that each player has an unobserved (or parameterized) skill that has some distribution, and using inference (or parameter estimation) we can determine the value of each player's skill.
 In this network, we decided each player would have a hidden offsensive and defensive skill value, shared across possessions:
@@ -374,12 +376,32 @@ Overshooting and step size, stopping criterion, underflow and pruning points, ar
 
 \section{Results}
 
-We started by running a single dataset.
+We started by running a single game between DET and CLE on 2007 Feb 2.
 
-Then more
+Then all games between CLE and DET
 
-Then full division
+Then full SW division
 
+Evaluation:
+
+We tried separating 25\% of the possessions for testing and 75\% of the possessions for training
+
+When doing this, we notice that the empirical expectation
+\[
+\Elin{R} \approx \frac{1}{m} \sum_{R} r \operatorname{M}\left[ r \right] = 1.0486
+\]%
+is 1.0486 points per possession (over 2364 possessions) in the training data, yet it predicts
+\[
+\Elin{\operatorname{E}_{\mathrm{training}}\left[R|C\right]} = 1.0183 \textrm{ or } 1.0217
+\]%
+points per possession (over 788 possession) for the possessions in the test set.
+
+The actual number of points scored in the test set was 1.0178, which indicates that the model is accounting for player skills.
+
+
+
+
+%$\Elin{\operatorname{E}_{\mathrm{training}}\left[R|C\right]$ is 
 
 \section{Analysis}
 
@@ -388,6 +410,8 @@ epsilon
 test/training vs. dataset size
 $E[Pr{datapoint}]$
 $M_count$
+
+(This is just one example though...do we need/want more?)
 
 ``[NBA West Southwest Intradivision games] In the 2008-2009 NBA season, Shane Battier was on the Second team NBA All-Defensive Team. However, he had a non-adjusted +/- of -18 in the games he played against the Southwest division, which is reflected in the results of only -1.594, -0.313, and 1.675 in his defensive skill ranking against 1 pt, 2 pt, and 3 pt respectively. 
 
@@ -401,7 +425,7 @@ On offense, Matt Carroll posted a 1 pt offensive skill of -14.792, 2 pt offensiv
 \section{Conclusions}
 
 Bayesian prior/smoothing
-Coach skill
+Coach skill - can add coach as another variable, and see if they are using the most optimal lineups against their opponent.
 More binary response models
 
 \section{References}
