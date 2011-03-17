@@ -54,7 +54,7 @@ E_D_schedule = logical([
 %We have L-1 thetas because there is one theta for every player.
 %L is the number of columns in the dataset, but one of the columns is R
 Theta = zeros(3, L-1); % With no prior information, initialize to zeros (we used to start at all zeroes on every call to mle_logistic anyway)
-epsilon = 1/M; % Some arbitrarily small number
+epsilon = (sum(dataset(:,1) == 1) + sum(dataset(:,1) == 3))/M; % Some arbitrarily small number
 % If first_step == 'M', these initialization values will determine which local optima we reach.
 % If first_step == 'E', presumably these will both be overwritten during the first E-step.
 
