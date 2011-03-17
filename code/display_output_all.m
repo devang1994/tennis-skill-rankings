@@ -7,11 +7,11 @@ players.names = player_names;
 
 disp('Table of Contents')
 disp('  LOGISTIC/logit')
-disp('    Choose E_D soft-assignment, start with E-step')
-disp('    Choose parameter values, start with M-step')
+disp('    Choose E_D soft-assignment, start with E-step  ll = @@@@@@@@@@, epsilon = @@@@@@@@@@')
+disp('    Choose parameter values, start with M-step     ll = @@@@@@@@@@, epsilon = @@@@@@@@@@')
 disp('  GAUSSIAN/probit')
-disp('    Choose E_D soft-assignment, start with E-step')
-disp('    Choose parameter values, start with M-step')
+disp('    Choose E_D soft-assignment, start with E-step  ll = @@@@@@@@@@, epsilon = @@@@@@@@@@')
+disp('    Choose parameter values, start with M-step     ll = @@@@@@@@@@, epsilon = @@@@@@@@@@')
 
 
 if exist('BradleyTerry_softassignments','var')

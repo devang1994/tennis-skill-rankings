@@ -1,0 +1,139 @@
+DET/CLE 20070204 only
+
+M_count =
+
+   39
+    3
+   34
+    7
+Table of Contents
+  LOGISTIC/logit
+    Choose E_D soft-assignment, start with E-step  ll = -51.4045, epsilon = 3.8314e-11
+    Choose parameter values, start with M-step     ll = -51.4045, epsilon = 0
+  GAUSSIAN/probit
+    Choose E_D soft-assignment, start with E-step  ll = -51.4045, epsilon = 7.2077e-12
+    Choose parameter values, start with M-step     ll = -51.4045, epsilon = 0
+    
+===========================================================
+Bradley-Terry (logit) soft-assignment initialization:
+after 30 EM iterations log-likelihood = -51.4045
+          i.e. E[Prb{Datapoint}] = 0.5383
+epsilon = 3.8314e-11
+          offense                    defense             player name
+   1pt      2pt      3pt      1pt      2pt      3pt          (num. possessions)
+   1.237    2.612  -17.107   -4.415  -24.655    7.186    Larry Hughes(31)
+  10.077   22.275   -0.559   -6.833   -4.835   -1.129    Jason Maxiell(8)
+   4.785    5.390   -1.110  -12.917  -18.312   -1.542    Tayshaun Prince(31)
+  12.346   24.833   -1.327    2.282   10.564   13.790    Chauncey Billups(34)
+  -2.053   -6.939   -1.291   -5.339  -15.599  -33.002    Richard Hamilton(33)
+  -2.966   -8.401  -25.275   -7.610  -15.388   -1.614    Zydrunas Ilgauskas(26)
+  -5.746   -8.072   -9.181  -10.370  -14.990   -9.736    Sasha Pavlovic(22)
+   2.282   10.564   13.790   -0.243    8.758   -7.191    LeBron James(33)
+  -8.692    8.924   -9.279    1.524    7.909   14.492    Rasheed Wallace(30)
+   8.012   -7.834    7.422   -4.171   -8.732  -17.673    Antonio McDyess(12)
+  -1.338   -8.533  -17.684   -0.355   -7.635    6.901    Drew Gooden(29)
+  -1.309    7.710   14.504   -0.325    8.725   -8.758    Anderson Varejao(12)
+  -4.929  -11.387  -16.971   -0.437   -7.667    5.334    Damon Jones(8)
+  -6.188  -11.417   -0.349   -6.833   -7.667   -0.108    Dale Davis(6)
+   3.099    7.245    6.000    9.690   16.081    7.879    Daniel Gibson(19)
+   0.319    7.583   22.094    6.930   16.478   -0.243    Donyell Marshall(15)
+ -11.653  -15.715   -1.096   -2.236    3.389   12.849    Carlos Delfino(17)
+  -4.568   -9.766   -0.949   11.020   11.681   -1.944    Chris Webber(28)
+  -5.465   -4.300   -0.747   10.270   17.490   -1.639    Lindsey Hunter(11)
+  -3.884   -3.434   13.926    3.735   25.746   -9.043    Eric Snow(10)
+
+RESCALE_EFFECTIVE_SIGMA =
+
+    0.5736
+
+===========================================================
+Bradley-Terry (logit) parameter initialization:
+after 500 EM iterations log-likelihood = -51.4045
+          i.e. E[Prb{Datapoint}] = 0.5383
+epsilon = 0
+          offense                    defense             player name
+   1pt      2pt      3pt      1pt      2pt      3pt          (num. possessions)
+  11.688   23.358   -0.834   -7.431   -5.046   -1.025    Jason Maxiell(8)
+  -0.104    2.375  -17.327   -6.022  -25.554    6.774    Larry Hughes(31)
+   5.624    4.720   -1.172  -14.507  -18.441   -1.295    Tayshaun Prince(31)
+  14.533   25.813   -1.553    3.805   10.786   13.833    Chauncey Billups(34)
+  -1.949   -6.630   -1.155   -7.348  -15.851  -33.103    Richard Hamilton(33)
+  -3.605   -8.629  -25.202   -8.252  -15.580   -1.882    Zydrunas Ilgauskas(26)
+  -6.450   -8.296   -9.238  -11.097  -15.182   -9.417    Sasha Pavlovic(22)
+   3.805   10.786   13.833    1.326    8.573   -7.019    LeBron James(33)
+  -9.737    8.958   -8.438    6.500    7.941   14.403    Rasheed Wallace(30)
+   9.052   -8.069    6.667  -10.098   -8.781  -17.537    Antonio McDyess(12)
+  -3.779   -8.584  -17.567   -2.323   -7.874    6.709    Drew Gooden(29)
+   0.182    7.740   14.433    1.638    8.755   -8.480    Anderson Varejao(12)
+  -7.403  -11.627  -16.967   -2.012   -7.692    5.248    Damon Jones(8)
+  -7.645  -13.590   -0.233   -7.431   -7.694   -0.579    Dale Davis(6)
+   2.853    7.448    6.104   10.411   16.063    7.646    Daniel Gibson(19)
+   0.008    7.782   22.068    7.567   16.459    0.111    Donyell Marshall(15)
+  -4.728   -8.886   -0.704   11.264   11.899   -1.529    Chris Webber(28)
+ -13.955  -17.425   -0.832   -3.652    3.381   13.002    Carlos Delfino(17)
+  -6.309   -3.835   -0.599   10.910   17.600   -1.838    Lindsey Hunter(11)
+  -3.493   -3.217   14.193    5.337   26.436   -8.545    Eric Snow(10)
+
+RESCALE_EFFECTIVE_SIGMA =
+
+    0.5736
+
+===========================================================
+Thurstone Case V (probit) soft-assignment initialization:
+after 32 EM iterations log-likelihood = -51.4045
+          i.e. E[Prb{Datapoint}] = 0.5383
+epsilon = 7.2077e-12
+          offense                    defense             player name
+   1pt      2pt      3pt      1pt      2pt      3pt          (num. possessions)
+  12.722   31.712   -1.053   -8.002   -7.638   -1.981    Jason Maxiell(8)
+   2.336    1.350  -23.932   -2.085  -35.888    9.233    Larry Hughes(31)
+   5.342    7.565   -1.871  -15.853  -24.983   -2.228    Tayshaun Prince(31)
+  15.512   35.537   -2.215    1.401   15.266   18.991    Chauncey Billups(34)
+  -2.778   -9.758   -2.141   -5.269  -21.854  -46.063    Richard Hamilton(33)
+  -1.956  -12.203  -34.972   -9.835  -21.996   -2.850    Zydrunas Ilgauskas(26)
+  -7.013  -11.058  -12.394  -14.864  -20.634  -13.222    Sasha Pavlovic(22)
+   1.401   15.266   18.991   -0.553   12.608   -9.198    LeBron James(33)
+ -16.418   13.267  -11.674    1.343   11.712   20.300    Rasheed Wallace(30)
+  14.960  -11.891    9.089   -5.296  -12.899  -24.888    Antonio McDyess(12)
+  -2.150  -12.217  -24.974   -0.901  -11.209    8.850    Drew Gooden(29)
+  -1.803   11.032   20.386   -0.556   12.587  -11.435    Anderson Varejao(12)
+  -5.354  -16.452  -23.579   -0.904  -11.232    6.613    Damon Jones(8)
+  -8.850  -16.836   -0.099   -8.002  -10.413   -0.540    Dale Davis(6)
+   3.059    9.872    7.806   13.406   22.010   10.637    Daniel Gibson(19)
+  -1.997   11.016   30.384    8.378   23.372    0.266    Donyell Marshall(15)
+ -15.648  -23.023   -0.813   -4.038    4.218   17.896    Carlos Delfino(17)
+  -6.799   -6.187   -0.714   11.900   23.799   -2.360    Lindsey Hunter(11)
+  -5.330  -13.497   -1.432   12.051   16.864   -2.068    Chris Webber(28)
+  -6.289   -2.535   19.344    0.627   37.265  -11.818    Eric Snow(10)
+
+RESCALE_EFFECTIVE_SIGMA =
+
+     1
+
+===========================================================
+Thurstone Case V (probit) parameter initialization:
+after 500 EM iterations log-likelihood = -51.4045
+          i.e. E[Prb{Datapoint}] = 0.5383
+epsilon = 0
+          offense                    defense             player name
+   1pt      2pt      3pt      1pt      2pt      3pt          (num. possessions)
+  16.096   32.688   -1.265   -9.162   -8.021   -1.898    Jason Maxiell(8)
+   0.205    1.055  -24.379   -7.136  -36.373    8.788    Larry Hughes(31)
+   5.975    6.647   -1.838  -19.357  -25.292   -2.214    Tayshaun Prince(31)
+  19.571   36.040   -2.155    5.002   15.547   19.224    Chauncey Billups(34)
+  -3.803   -9.419   -2.137   -9.275  -21.790  -46.191    Richard Hamilton(33)
+  -3.276  -12.162  -34.551  -11.641  -22.146   -3.133    Zydrunas Ilgauskas(26)
+  -8.139  -11.016  -12.119  -16.503  -20.784  -12.974    Sasha Pavlovic(22)
+   5.002   15.547   19.224    3.207   12.819   -9.075    LeBron James(33)
+ -14.125   13.554  -11.333    7.998   11.962   20.253    Rasheed Wallace(30)
+  13.035  -12.399    8.863  -12.857  -13.150  -24.759    Antonio McDyess(12)
+  -6.680  -12.469  -24.698   -4.797  -11.716    8.906    Drew Gooden(29)
+   1.821   11.280   20.192    3.704   12.874  -11.376    Anderson Varejao(12)
+  -9.862  -16.735  -23.729   -4.298  -11.658    6.605    Damon Jones(8)
+ -10.885  -18.818   -0.016   -9.162  -10.014   -1.088    Dale Davis(6)
+   3.279    9.829    7.613   15.412   21.945   10.504    Daniel Gibson(19)
+  -1.584   10.973   30.045   10.550   23.307    0.663    Donyell Marshall(15)
+ -17.949  -24.304   -0.648   -5.447    3.865   17.955    Carlos Delfino(17)
+  -6.301  -12.712   -1.189   13.463   16.846   -1.519    Chris Webber(28)
+  -7.065   -5.485   -0.632   14.497   24.103   -2.292    Lindsey Hunter(11)
+  -5.064   -2.244   19.873    6.046   37.534  -11.258    Eric Snow(10)
