@@ -1,7 +1,7 @@
-function display_output(names, theta, ll, epsilon, title, M, isgaussian)
+function display_output(roster, converged, title, isgaussian)
 
-P = length(names);
-assert(size(theta,2) == P*2)
+P = length(roster.names);
+assert(size(converged.Theta,2) == P*2)
 
 if isgaussian
 	RESCALE_EFFECTIVE_SIGMA = 1;
@@ -11,7 +11,7 @@ else
 	RESCALE_EFFECTIVE_SIGMA = (1 / (sqrt(3*10)/pi));
 end
 
-theta_scaled = theta * RESCALE_EFFECTIVE_SIGMA;
+theta_scaled = converged.Theta * RESCALE_EFFECTIVE_SIGMA;
 
 
 % For sorting purposes only: Your total skill is "amount of scoring on offense" minus "amount of scoring on defense"
@@ -25,16 +25,16 @@ disp('');
 disp('');
 disp('===========================================================');
 disp(title)
-disp(['after ' num2str(length(ll)) ' EM iterations log-likelihood = ' num2str(ll(end))])
-disp(['          i.e. E[Prb{Datapoint}] = ' num2str(exp(ll(end)/M)) ])
-epsilon,
+disp(['after ' num2str(length(converged.log_likelihood)) ' EM iterations log-likelihood = ' num2str(converged.log_likelihood(end))])
+disp(['          i.e. E[Prb{Datapoint}] = ' num2str(exp(converged.log_likelihood(end)/roster.M)) ])
+disp(['epsilon = ' num2str(converged.epsilon)])
 disp('');
-disp('          offense                    defense');
-disp('   1pt      2pt      3pt      1pt      2pt      3pt');
+disp('          offense                    defense             player name');
+disp('   1pt      2pt      3pt      1pt      2pt      3pt          (num. possessions)');
 for player_rank=1:P
 	n = skill2_order(player_rank);
 	matrix_str = num2str([0;theta_scaled(:,n);theta_scaled(:,P+n)]','% 7.3f  ');
-	disp([matrix_str(:,7:end) '    ' names{n}]);
+	disp([matrix_str(:,7:end) '    ' roster.names{n} '(' num2str(roster.possessions(n)) ')']);
 end
 
 RESCALE_EFFECTIVE_SIGMA,
