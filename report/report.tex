@@ -366,14 +366,25 @@ For each datapoint $\left< \mathcal{D}_r, \mathcal{D}_c \right>$ we create soft-
 \item $\left< \mathcal{D}_r, \mathcal{D}_c, w_1^0, w_2^0, w_3^0 \right>$  with weight proportional to $\prb{\mathcal{D}_r, \mathcal{D}_c, w_1^0, w_2^0, w_3^0\mid \vec \theta, \varepsilon}$
 \end{itemize}
 
+Since each datapoint has only eight possibilities, we easily compute the exact probability $\prb{\mathcal{D}_r, \mathcal{D}_c, w_1^1, w_2^1, w_3^1 \mid \vec \theta,\varepsilon}$ using the chain rule for Bayesian networks.
 % ==============================================================================
 \subsection{Expectation-Maximization: Initialization}
 
-%We will experiment with a few initialization strategies. One possibility is to start all \theta = \vec 0 and \varepsilon = 
+We will experiment with a few initialization strategies.
+One possibility is to initialize all skills are the same.
+Here,
+\[
+\theta = \vec 0
+\]%
+suggesting $\prb{W_i} = 0.5$ for all $i$, and therefore
+\[
+\varepsilon = {1 \over 3} \frac{ \operatorname{M}\left[ r^3 \right]/2 + \operatorname{M}\left[ r^2 \right]/4 + \operatorname{M}\left[ r^1 \right]/8 + \operatorname{M}\left[ r^0 \right]/8 }{\operatorname{M}}
+\]%
 
-Since soft assignments to $W_3$ represent roughly the probability of scoring three points during a possession,
+Another approach is to realize that soft assignments to, e.g. $W_3$ represent roughly the probability of scoring three points during a possession.
+Then
 % for each 10-player combination,
-we can initialize $\prb{W_3 = w_3^1}$ to the fraction
+we would initialize $\prb{W_3 = w_3^1}$ to the fraction
 \[
 w_3^{\mathrm{init}} := \frac{ \operatorname{M}\left[ r^3 \right] }{ M } 
 \]%
