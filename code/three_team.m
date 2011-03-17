@@ -123,7 +123,7 @@ for m=1:M
 			wins   = W_soft( E_D_schedule(k,:))     ;
 			losses = 1 - W_soft(~E_D_schedule(k,:)) ;
 			%I like this assertion but it eats up runtime %assert(numel([wins, losses]) == 3)
-			pr_w_c(k) = prod([wins, losses]);
+			pr_w_c(:,k) = prod([wins, losses]);
 		end
 		soft_assignments = R_schedule' .* pr_w_c; %elementwise
 		
