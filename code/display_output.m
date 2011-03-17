@@ -20,6 +20,7 @@ skill2_totals = theta_scaled(2,1:P) - theta_scaled(2,(P+1):end);
 % print in descending order (best differential at the top, worst player at the bottom)
 [skill2 skill2_order] = sort(skill2_totals,'descend');
 
+total_possessions = roster.possessions(1:P) + roster.possessions((P+1):end);
 
 disp('');
 disp('');
@@ -34,7 +35,7 @@ disp('   1pt      2pt      3pt      1pt      2pt      3pt          (num. possess
 for player_rank=1:P
 	n = skill2_order(player_rank);
 	matrix_str = num2str([0;theta_scaled(:,n);theta_scaled(:,P+n)]','% 7.3f  ');
-	disp([matrix_str(:,7:end) '    ' roster.names{n} '(' num2str(roster.possessions(n)) ')']);
+	disp([matrix_str(:,7:end) '    ' roster.names{n} '(' num2str(total_possessions(n)) ')']);
 end
 
 RESCALE_EFFECTIVE_SIGMA,
