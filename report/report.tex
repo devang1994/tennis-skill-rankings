@@ -374,12 +374,32 @@ Overshooting and step size, stopping criterion, underflow and pruning points, ar
 
 \section{Results}
 
-We started by running a single dataset.
+We started by running a single dataset 2007 Feb 2.
 
-Then more
+Then all games between CLE and DET
 
-Then full division
+Then full SW division
 
+Evaluation:
+
+We tried separating 25\% of the possessions for testing and 75\% of the possessions for training
+
+When doing this, we notice that the empirical expectation
+\[
+\Elin{R} \approx \frac{1}{m} \sum_{R} r \operatorname{M}\left[ r \right] = 1.0486
+\]%
+is 1.0486 points per possession (over 2364 possessions) in the training data, yet it predicts
+\[
+\Elin{\operatorname{E}_{\mathrm{training}}\left[R|C\right]} = 1.0183 \textrm{ or } 1.0217
+\]%
+points per possession (over 788 possession) for the possessions in the test set.
+
+The actual number of points scored in the test set was 1.0178, which indicates that the model is accounting for player skills.
+
+
+
+
+%$\Elin{\operatorname{E}_{\mathrm{training}}\left[R|C\right]$ is 
 
 \section{Analysis}
 
