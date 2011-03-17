@@ -417,17 +417,10 @@ With the logit and probit functions, numerical underflow is also an issue - the 
 
 \section{Results}
 
-We started by running a single game between DET and CLE on 2007 Feb 2.
+Our initial run was one game from 2007, when the Detroit Pistons played at Cleveland. For the single game, our epsilon was on the order of 10e-7. After that, we ran on all Western Conference Southwest Division games from the 2008-2009 NBA season. With the logit function, we achieved an epsilon of .0266 and a log-likelihood of -2955.9, while the probit function achieved an epsilon of .0154 and a log-likelihood of -2969.2. The Southwest Division games encompassed 71 players, so we fit 71*6 = 426 parameters in total, from 3152 possessions.
 
-Then all games between CLE and DET
-
-Then full SW division
-
-Evaluation:
-
-We tried separating 25\% of the possessions for testing and 75\% of the possessions for training
-
-When doing this, we notice that the empirical expectation
+\subsection{Evaluation}
+We tried separating 25\% of the possessions for testing and 75\% of the possessions for training. When doing this, we notice that the empirical expectation
 \[
 \Elin{R} \approx \frac{1}{m} \sum_{R} r \operatorname{M}\left[ r \right] = 1.0486
 \]%
@@ -438,7 +431,29 @@ is 1.0486 points per possession (over 2364 possessions) in the training data, ye
 points per possession (over 788 possession) for the possessions in the test set.
 
 The actual number of points scored in the test set was 1.0178, which indicates that the model is accounting for player skills.
-
+%
+%We started by running a single game between DET and CLE on 2007 Feb 2.
+%
+%Then all games between CLE and DET
+%
+%Then full SW division
+%
+%Evaluation:
+%
+%We tried separating 25\% of the possessions for testing and 75\% of the possessions for training
+%
+%When doing this, we notice that the empirical expectation
+%\[
+%\Elin{R} \approx \frac{1}{m} \sum_{R} r \operatorname{M}\left[ r \right] = 1.0486
+%\]%
+%is 1.0486 points per possession (over 2364 possessions) in the training data, yet it predicts
+%\[
+%\Elin{\operatorname{E}_{\mathrm{training}}\left[R|C\right]} = 1.0183 \textrm{ or } 1.0217
+%\]%
+%points per possession (over 788 possession) for the possessions in the test set.
+%
+%The actual number of points scored in the test set was 1.0178, which indicates that the model is accounting for player skills.
+%
 
 
 Prediction against test
