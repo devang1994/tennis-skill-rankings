@@ -65,7 +65,7 @@ Talk about the history of ELO~\cite{elo1978rating} and Glicko~\cite{glickman1999
 
 The Elo rating system is used for calculating relative skill levels of players in two-player games, but has been adapted to team sports like soccer, football, basketball, and baseball. The performance of players/teams is inferred from wins, losses, and draws against other players/teams, while depending on the ratings of the opponent and the results scored against them. (Elo also has some mathetmatical issues of that have been addressed through different means). Elo only considers the final score, which is not always indicative of how competitive the game was, and when used for teams, does not consider the players individually. Therefore, our intent is to build a more sophisticated model that determines 6 different skills (3 on offensive and 3 on defense) for each player using Bayesian Networks. By doing so, we can make better inferences on how well these sets of players contribute as a team on each possession and how likely they are to score 0, 1, 2, or 3 points per possession against their opponent. 
 
-Glicko - their algorithm ignores certain features of model that a likelihood-based analysis would use for computational ease; do not account for posterior correlations of players' strengths - excluded correlations so that # of model parameters greatly reduced. 
+Glicko - their algorithm ignores certain features of model that a likelihood-based analysis would use for computational ease; do not account for posterior correlations of players' strengths - excluded correlations so that \# of model parameters greatly reduced. 
 Approximating algorithm performs reasonably well. 
 
 Basketball brings two key challenges to the field of Bayesian Skill estimation.
