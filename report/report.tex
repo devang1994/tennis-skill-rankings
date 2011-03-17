@@ -398,9 +398,11 @@ With these soft assignments we can begin EM on the M-step.
 % ==============================================================================
 \subsection{Implementation Considerations}
 
-E-Step MLE of $\theta$ are not closed-form but require iteration.
-We choose closed-form Hessian-based weighted regression.
-Overshooting and step size, stopping criterion, underflow and pruning points, are all real considerations.
+Computing the E-Step maximum likelihoods of $\theta$ are not closed-form but require iteration and use of the numerical approximation method Newton-Raphson, which uses the gradient and inverse of the Hessian to reach the maximum log-likelihood. The majority of the running-time is spent in these functions, computing the Moore-Penrose pseudoinverse of the Hessian.
+
+Of additional concern is the problem of overshooting the maximal point and actually decreasing our log-likelihood by updating $\theta$ by too large a distance. In order to prevent this, whenever we detect a log-likelihood that is lower than our previous, we halve the step size and repeat until we either increase the log-likelihood or are satisfied that we have arrived at the maximum.
+
+With the logit and probit functions, numerical underflow is also an issue - the tail ends of distributions tend to infinitesimal probabilities. We prune out these points when we detect them in order to avoid underflow and NaN results.
 
 \section{Results}
 
