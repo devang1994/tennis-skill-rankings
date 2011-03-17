@@ -1,7 +1,7 @@
-function display_output(names, theta, ll, epsilon, title, M, isgaussian)
+function display_output(names, converged, title, M, isgaussian)
 
 P = length(names);
-assert(size(theta,2) == P*2)
+assert(size(converged.Theta,2) == P*2)
 
 if isgaussian
 	RESCALE_EFFECTIVE_SIGMA = 1;
@@ -11,7 +11,7 @@ else
 	RESCALE_EFFECTIVE_SIGMA = (1 / (sqrt(3*10)/pi));
 end
 
-theta_scaled = theta * RESCALE_EFFECTIVE_SIGMA;
+theta_scaled = converged.Theta * RESCALE_EFFECTIVE_SIGMA;
 
 
 % For sorting purposes only: Your total skill is "amount of scoring on offense" minus "amount of scoring on defense"
@@ -25,8 +25,8 @@ disp('');
 disp('');
 disp('===========================================================');
 disp(title)
-disp(['after ' num2str(length(ll)) ' EM iterations log-likelihood = ' num2str(ll(end))])
-disp(['          i.e. E[Prb{Datapoint}] = ' num2str(exp(ll(end)/M)) ])
+disp(['after ' num2str(length(converged.log_likelihood)) ' EM iterations log-likelihood = ' num2str(converged.log_likelihood(end))])
+disp(['          i.e. E[Prb{Datapoint}] = ' num2str(exp(converged.log_likelihood(end)/M)) ])
 epsilon,
 disp('');
 disp('          offense                    defense');
