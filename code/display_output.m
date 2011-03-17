@@ -1,4 +1,6 @@
 function display_output(roster, converged, title, isgaussian)
+PPP_SIGMA = sqrt(10);
+
 
 P = length(roster.names);
 assert(size(converged.Theta,2) == P*2)
@@ -8,7 +10,7 @@ if isgaussian
 else
 	% The Gaussian we use during probit has variance 10 since it is assumed to be the sum of 10 independent unit gaussian player performances.
 	% A logit with the same variance would require rescaling the theta values by: sigma^2 = pi^2 s^2 / 3 ==> s = sqrt(3) sigma / pi
-	RESCALE_EFFECTIVE_SIGMA = (1 / (sqrt(3*10)/pi));
+	RESCALE_EFFECTIVE_SIGMA = (1 / (sqrt(3) * PPP_SIGMA/pi));
 end
 
 theta_scaled = converged.Theta * RESCALE_EFFECTIVE_SIGMA;
@@ -39,3 +41,20 @@ for player_rank=1:P
 end
 
 RESCALE_EFFECTIVE_SIGMA,
+
+% for player_rank=1:(P-1)
+	% n1 = skill2_order(player_rank);
+	% n2 = skill2_order(player_rank+1);
+	% p1_delta = 5*(converged.Theta(:,n1)   + converged.Theta(:,P+n1));
+	% p2_delta = 5*(converged.Theta(:,n2) + converged.Theta(:,P+n2));
+	% if isgaussian
+		% p1_w = normcdf(p1_delta,0,PPP_SIGMA);
+		% p2_w = normcdf(p2_delta,0,PPP_SIGMA);
+	% else
+		% p1_w = sigmoid(p1_delta);
+		% p2_w = sigmoid(p2_delta);
+	% end
+	% p1_ppp = 3*p1_w(3) + 2*(1-p1_w(3))*p1_w(2) + (1-p1_w(3))*(1-p1_w(2))*p1_w(1);
+	% p2_ppp = 3*p2_w(3) + 2*(1-p2_w(3))*p2_w(2) + (1-p2_w(3))*(1-p2_w(2))*p2_w(1);
+	% disp(['5× ' roster.names{n1} ' vs. ' roster.names{n2} ': ' num2str(p1_ppp) '-' num2str(p2_ppp) ' per possession']);
+% end

@@ -195,6 +195,10 @@ for j = 1:MAX_ITER
 				keyboard
 			end
 			
+			% recenter theta_w_i (for stability and readability)
+			theta_w_i((length(theta_w_i)/2+1):end) = theta_w_i((length(theta_w_i)/2+1):end)*-1;
+			theta_w_i = theta_w_i - median(theta_w_i);
+			theta_w_i((length(theta_w_i)/2+1):end) = theta_w_i((length(theta_w_i)/2+1):end)*-1;
 			% theta_w_i is returned as a column vector
 			Theta(i,:) = theta_w_i';
 		end
