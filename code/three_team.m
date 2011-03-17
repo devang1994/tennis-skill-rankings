@@ -26,13 +26,26 @@ clear dataset player_names;
 cd ..
 
 
+
+training_players,
+test_players,
+
 % There are only two teams in the test set. Which columns of trained.Theta are these?
 in_test = false(1,length(training_players)*2);
 for indxTest = 1:length(test_players)
 	search_for_name = test_players(indxTest);
-	in_test = in_test | repmat(strcmp(search_for_name,training_players),[1 2]); % repmat because if the player is there we want their offense and defense
+	found_columns = repmat(strcmp(search_for_name,training_players),[1 2]); % repmat because if the player is there we want their offense and defense
+	in_test = in_test | found_columns;
+	
+	if nnz(found_columns) ~= 2
+		search_for_name,
+		keyboard
+	end
 end
 
+
+nnz(in_test)/2,
+assert(nnz(in_test) == length(test_players)*2)
 
 %==============
 %   TRAINING
@@ -48,7 +61,7 @@ M_count = sum(bsxfun(@eq,training_data(:,1),0:3))',
 players = struct('M', sum(M_count), 'possessions', sum(training_data(:,2:end))');
 players.names = training_players;
 
-display_output(players, trained, 'Training result', false);
+display_output(players, trained, 'Training result', USE_GAUSSIAN);
 
 %================
 %   PREDICTION
@@ -105,16 +118,18 @@ for m=1:M
 
 		W_soft = [W1 W2 W3];
 		% Compute Pr{w|c}
-		pr_w_c = nan(1,8); % initialize to NaN in order to catch typos
+		pr_w_c = nan(4,8); % initialize to NaN in order to catch typos
 		for k=1:8
 			wins   = W_soft( E_D_schedule(k,:))     ;
 			losses = 1 - W_soft(~E_D_schedule(k,:)) ;
 			%I like this assertion but it eats up runtime %assert(numel([wins, losses]) == 3)
 			pr_w_c(k) = prod([wins, losses]);
 		end
+		soft_assignments = R_schedule' .* pr_w_c; %elementwise
 		
-		soft_assignments = pr_w_c' / sum(pr_w_c); % a column vector
-		% Normalize (divide out Pr{r,c} = \sum_w Pr{r,w,c})
+		p = sum(soft_assignments,2);
+		p = p / sum(p); % a column vector
+		
 		R_softassignments(m,:) = soft_assignments' * R_schedule;
 		R_samples(m) = randsample_fromweights(0:3,R_softassignments(m,:));
 	end
