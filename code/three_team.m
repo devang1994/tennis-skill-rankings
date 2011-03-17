@@ -2,12 +2,14 @@
 %    $sh createdata.threeteam.sh.bat
 clear all; MAX_ITER = 500
 
-USE_GAUSSIAN = false;
+USE_GAUSSIAN = true;
 SIGMA = sqrt(10),
 
-%==============
-%   TRAINING
-%==============
+
+%===============
+%   LOAD DATA
+%===============
+
 
 cd threeteam.training
 loaddata_train; % MATLAB pre-parses scripts by name, so the two loaddata calls need to have their own name
@@ -16,9 +18,37 @@ training_players = player_names;
 clear dataset player_names;
 cd ..
 
+cd threeteam.test
+loaddata_test;
+test_dataset = dataset;
+test_players = player_names;
+clear dataset player_names;
+cd ..
+
+
+% There are only two teams in the test set. Which columns of trained.Theta are these?
+in_test = false(1,length(training_players)*2);
+for indxTest = 1:length(test_players)
+	search_for_name = test_players(indxTest);
+	in_test = in_test | repmat(strcmp(search_for_name,training_players),[1 2]); % repmat because if the player is there we want their offense and defense
+end
+
+
+%==============
+%   TRAINING
+%==============
+
+
 trained = basketball_network_EM(training_data, MAX_ITER, USE_GAUSSIAN, 'E');
 
-display_output_all
+
+
+
+M_count = sum(bsxfun(@eq,training_data(:,1),0:3))',
+players = struct('M', sum(M_count), 'possessions', sum(training_data(:,2:end))');
+players.names = training_players;
+
+display_output(players, trained, 'Training result', false);
 
 %================
 %   PREDICTION
@@ -54,21 +84,6 @@ R_schedule = [
 	epsilon epsilon epsilon (1-3*epsilon);
 	epsilon epsilon epsilon (1-3*epsilon);
 	epsilon epsilon epsilon (1-3*epsilon)];
-
-cd threeteam.test
-loaddata_test;
-test_dataset = dataset;
-test_players = player_names;
-clear dataset player_names;
-cd ..
-
-
-% There are only two teams in the test set. Which columns of trained.Theta are these?
-in_test = false(1,size(trained.Theta,2));
-for indxTest = 1:length(test_players)
-	search_for_name = test_players(indxTest);
-	in_test = in_test | repmat(strcmp(search_for_name,training_players),[1 2]); % repmat because if the player is there we want their offense and defense
-end
 
 
 % Now sample from Pr{R|c} assuming epsilon = 0
