@@ -50,7 +50,7 @@
 
 \section{Introduction}
 
-  Template
+	In this paper, we examine professional basketball games in the context of Bayesian Skill Ranking. By modeling every possession as a data point parameterized by a number of points scored and a binary-valued vector of players on the court, we hope to infer player skill levels in six abilities - one-point, two-point, and three-point offense and defense. There are many existing rating systems, but most are designed for single-player games with simple binary outcomes. In order to successfully model basketball outcomes, we built a network with a likelihood function that can be maximized via Expectation-Maximization. We model our main variables with both a logit and probit function, which we use to estimate each player's skill rankings.
 
 % ==============================================================================
 % ==============================================================================
@@ -59,29 +59,19 @@
 
 For head-to-head competitions (Player A vs. Player B) with binary outcomes (Player A Wins, Player A Loses), there exist many well-understood techniques for compressing player performances into a single skill parameter.
 ELO~\cite{elo1978rating} is the most widespread such ranking system.
-ELO was designed around the logistic probabilistic player comparison model employed by ELO is the Bradley-Terry's Here, player performance is modelled as a logistic function, as suggested originally by~\cite{bradley1952rank}.
+ELO was initially designed around a probit model that determined probability of Player A defeating Player B as a function of the difference of their skill ranking. However, the model was soon changed to the better-performing logit Bradley-Terry model, as suggested originally by~\cite{bradley1952rank}.
 
-ELO was later changed to a Gaussian model
+Other ranking systems, such as Glicko~\cite{glickman1999parameter}, model the probability of winning as both a logit and probit function, which are very similar in distribution but have different convergence properties and perform differently at the tails of the distributions.
 
-Glicko is modelled using both logistic and Gaussian
-
-Talk about the history of ELO~\cite{elo1978rating} and Glicko~\cite{glickman1999parameter}, and the ongoing debate between logistic and gaussian (logit vs. probit).
-
-Let's talk about~\cite{herbrich2007trueskilltm}~and~\cite{coulom2008whole} and then just follow the citations that those guys make to introduce the general challenges and state-of-the art.
-
-
-What if you want multiple players?
-TrueSkill addresses having multiple players. But it's only Gaussian.
+More recent developments in ranking systems deal with team behavior and performance, and Bayesian networks where skill influences performance, and performance variables are combined to determine winning probabilities. TrueSkill ~\cite{herbrich2007trueskilltm}~ is used for Halo rankings in both individual and cooperative modes, but it only uses Gaussian priors for skill and performance. Whole-History Rating ~\cite{coulom2008whole} focuses on varying skill parameters over time, to account for players improving with practice and declining with age.
 
 The Elo rating system is used for calculating relative skill levels of players in two-player games, but has been adapted to team sports like soccer, football, basketball, and baseball. The performance of players/teams is inferred from wins, losses, and draws against other players/teams, while depending on the ratings of the opponent and the results scored against them. (Elo also has some mathetmatical issues of that have been addressed through different means). Elo only considers the final score, which is not always indicative of how competitive the game was, and when used for teams, does not consider the players individually. Therefore, our intent is to build a more sophisticated model that determines 6 different skills (3 on offensive and 3 on defense) for each player using Bayesian Networks. By doing so, we can make better inferences on how well these sets of players contribute as a team on each possession and how likely they are to score 0, 1, 2, or 3 points per possession against their opponent. 
 
-Glicko - their algorithm ignores certain features of model that a likelihood-based analysis would use for computational ease; do not account for posterior correlations of players' strengths - excluded correlations so that \# of model parameters greatly reduced. 
-Approximating algorithm performs reasonably well. 
-
-Basketball also brings another key challenge to the field of Bayesian Skill estimation.
+Basketball also brings more key challenges to the field of Bayesian Skill estimation.
 \begin{itemize}
-\item Results are not binary Win/Lose outcomes.
+\item Results are not binary Win/Lose outcomes - or at least it is nearly impossible to distinguish between players abilities when only examining the final result of a game.
 \item Results are influenced by the skill differential of more than two players.
+\item A player's skill level is at least two parameters - offense and defense.
 \end{itemize}
 
 
@@ -93,12 +83,12 @@ Basketball also brings another key challenge to the field of Bayesian Skill esti
 \subsection{Traditional Networks}
 
 We model the result of each possession as an independent and identically distributed random variable, \emph{Result}.
-An NBA roster has 12 players, but only five of them are on the court for a given team during any single posession.
+An NBA roster has 12 players, but only five of them are on the court for a given team during any single possession.
 
-(Are we still doing this?) To reduce noise, we ignore ``garbage time'' posessions. To simplify the model we will only consider possessions in the first half of games.
+To reduce noise, we ignore ``garbage time" possessions. To simplify the model we will only consider possessions in the first half of games, or in the case of games that go to overtime, the entire game. This ensures that we take a lot of the gamesmanship and coaching strategy out of the data - we won't have to deal with starters resting or bench players playing a lot of minutes in a blowout.
 
-We begin with a very basic model that follows traditional ``skill ranking'' in the sense that each player has an unobserved (or parameterized) skill that has some distribution, and using inference (or parameter estimation) we can determine the value of each player's skill.
-In this network, we decided each player would have a hidden offsensive and defensive skill value, shared across possessions:
+We begin with a very basic model that follows traditional ``skill ranking" in the sense that each player has an unobserved (or parameterized) skill that has some distribution, and using inference (or parameter estimation) we can determine the value of each player's skill.
+In this network, we decided each player would have a hidden offensive and defensive skill value, shared across possessions:
 \begin{center}
 	\includegraphics[width=0.90\linewidth]{figures/network}
 \end{center}
@@ -112,25 +102,22 @@ These skills would contribute deterministically in some way to an ``effective'' 
 
 Note: We are ignoring the rare 4 point plays. 
 
-The \emph{On Court} random variable ``multiplexes'' between those players that are on the court and those that are not.
+The \emph{On Court} random variable "multiplexes" between those players that are on the court and those that are not.
 
 % ==============================================================================
 \subsection{Issues}
 \label{sec:badnetwork}
 These traditional models~\cite{herbrich2007trueskilltm} have difficulty capturing the proper causalities when Results can have multinomial-valued outcomes.
 For example, regardless of the parameterization of the \emph{Results} CPD, both $\prb{ R = 2}$ and $\prb{R= 3}$ would depend on the same skills of the same players.
-The relative distribution of outcomes $\prb{R = 2}$ vs. $\prb{R = 3}$ would be shared across all ``units'' (i.e. all combinations of \emph{On Court} assignments).
+The relative distribution of outcomes $\prb{R = 2}$ vs. $\prb{R = 3}$ would be shared across all ``units" (i.e. all combinations of \emph{On Court} assignments).
 
 In reality, a team that scores $R=3$ half the time and $R=1$ half the time is just as good as a team that scores $R=2$ all the time.
 However, any traditional Win/Lose model will unfairly penalize the likelihood of one of these teams over the other and leads to under-fitting.
 This might suggest that we have a random variable that represents $\Elin{\textrm{points scored}}$, but this doesn't pass the clarity test.
 
-
-% TODO(jdhuang): Modular in Win_i would be very meaningful
-
 Secondly, there is a lot of value in being able to compare with the state-of-the-art in the Win/Lose based Bayesian Skill Ranking literature.
 Specifically, there is common debate over logistic vs. Gaussian skill/performance distributions and we wish to be sensitive to that conversation in this project.
-Having a multinomial outcome makes it difficult to directly compare logistic vs. Gaussian in the standard skill/performance framework because there is no consensus in the literature about how to extend these models just to support ties~\cite{hunter2004mm}, let alone general multinomial outcomes.
+Having a multinomial outcome makes it difficult to directly compare logistic vs. Gaussian in the standard skill/performance framework because there is no consensus in the literature about how to extend these models just to support ties~\cite{hunter2004mm}, let alone general multinomial outcomes. This is part of our rationale for designing a network with a modular framework for different density functions.
 
 % ==============================================================================
 \subsection{Proposed Network}
@@ -150,17 +137,16 @@ In this network, each player is represented by three skill parameters:
 
 For notational convenience, let
 \[
-A\left(\mathrm{Skills}\right) \tridefeq \exp \left( \sum_i \textrm{Off. Team, Player i Off. Skill } k \right)
+A\left(\mathrm{Skills}\right) \tridefeq \sum_i  \left( \textrm{Off. Team, Player i Off. Skill } k \right) * C_i
 %\quad, \quad \quad
 \]%
 \[
-B\left(\mathrm{Skills}\right) \tridefeq  \exp \left( \sum_i \textrm{Def. Team, Player i Def. Skill } k \right)
+B\left(\mathrm{Skills}\right) \tridefeq  \sum_i \left(  \textrm{Def. Team, Player i Def. Skill } k \right) * C_i
 \]%
 where
-\begin{align*}
-\vec \theta_k =& \left\{\textrm{Off. Team, Player i Off. Skill } k\right\}_k
-\\             &\cup \left\{\textrm{Def. Team, Player i Def. Skill } k\right\}_k
-\end{align*}%
+\[
+C_i = binary value indicating whether player i is on-court
+\]%
 
 On each possession, there are three binary hidden random variables defined by a probability function with parameters that we will learn. In particular, each of the ``Win'' random variables depends on the corresponding skills of players on court as input (which are learned):
 \begin{enumerate}
@@ -182,12 +168,10 @@ Alternatively, the Thurstone Case V model corresponds to:
 \[
 \prb{\mathrm{Win}_k = \mathbf{True} \mid \mathrm{Skills} } = \Phi\left( A - B \right)
 \]%
-The logit (Bradley-Terry) and probit(Thurstone Case V) are the main Binary Response Models used throughout the history of the skill ranking literature~\cite{elo1978rating,glickman1999parameter,herbrich2007trueskilltm,coulom2008whole}.
+The logit (Bradley-Terry) and probit (Thurstone Case V) are the main Binary Response Models used throughout the history of the skill ranking literature~\cite{elo1978rating,glickman1999parameter,herbrich2007trueskilltm,coulom2008whole}.
 
 However, the power of this Bayesian Network construction is that any Binary Response Model can be plugged in modularly.
 One can easily compare the performance of Cauchy~\cite{franklinPolisciWiscEduMLELec07p4up}, Log-Log~and~Complementary Log-Log~\cite{long1997regression}, Scobit~\cite{nagler1994scobit}, etc. without changing the network or the core inference algorithm.
-%We will also explore common  from the statistics community to see how they compare.
-
 
 For notational convenience, we will write $W_k = w_k^1$ for $\mathrm{Win}_k = \mathbf{True}$, and $W_k = w_k^0$ when {\bf False}.
 
@@ -202,7 +186,7 @@ Imagine that for a particular five-man unit, the $\theta$ are known and the resu
 \end{align*}%
 This means, on each possession
 \begin{itemize}
-\item the offensive team has a $10\%$ probability of scoring 3 points (i.e. $R=r^3$ with 90\% probability)
+\item the offensive team has a $10\%$ probability of scoring 3 points (i.e. $R=r^3$ with 10\% probability)
 \item the offensive team has a $\left(100\% - 10\%\right) \times 35\%$ probability of scoring 2 points (i.e. $\prb{R=r^2}=31.50\%$)
 \item the offensive team has a $90\% \times 65\% \times 5\%$ probability of scoring 1 point (i.e. $\prb{R=r^1}=2.925\%$)
 \item the offensive team has a $55.575\%$ chance of scoring 0 points
