@@ -82,7 +82,7 @@ Basketball brings two key challenges to the field of Bayesian Skill estimation.
 We model the result of each possession as an independent and identically distributed random variable, \emph{Result}.
 An NBA roster has 12 players, but only five of them are on the court for a given team during any single posession.
 
-To reduce noise, we ignore ``garbage time'' posessions. To simplify the model we will only consider possessions in the first half of games.
+(Are we still doing this?) To reduce noise, we ignore ``garbage time'' posessions. To simplify the model we will only consider possessions in the first half of games.
 
 We begin with a very basic model that follows traditional ``skill ranking'' in the sense that each player has an unobserved (or parameterized) skill that has some distribution, and using inference (or parameter estimation) we can determine the value of each player's skill.
 In this network, we decided each player would have a hidden offsensive and defensive skill value, shared across possessions:
@@ -378,9 +378,9 @@ Overshooting and step size, stopping criterion, underflow and pruning points, ar
 
 We started by running a single dataset.
 
-Then more
+Then more (one division)
 
-Then full division
+Then season?
 
 
 \section{Analysis}
@@ -391,6 +391,8 @@ test/training vs. dataset size
 $E[Pr{datapoint}]$
 $M_count$
 
+(This is just one example though...do we need/want more?)
+
 ``[NBA West Southwest Intradivision games] In the 2008-2009 NBA season, Shane Battier was on the Second team NBA All-Defensive Team. However, he had a non-adjusted +/- of -18 in the games he played against the Southwest division, which is reflected in the results of only -1.594, -0.313, and 1.675 in his defensive skill ranking against 1 pt, 2 pt, and 3 pt respectively. 
 
 Surpringly, Ryan Bowen had 1 pt defensive skills of -13.475, 2 pt defensive skills of -2.207, and 3 pt defensive skills of -18.819 . Bowen only participated in one of seven of his team's intradivision games, playing 16 minutes and ending with a non-adjusted +/- of -3. However, when he was on the floor, the opponent had 32 possessions but only R(3) = 2 (6.25% of possessions) which is lower than the typical 8.48%. The opponent did have R(1) = 3 (9.375% of possessions), which is much higher than the expected 2.9%. However, his teammates on the court had 1 pt defensive skills of +0.383, +0.214, +1.909, +0.659, +5.574, and +0.475, so Bowen appeared to have made a large contribution to keeping the R(1) of their opponent lower. ''
@@ -398,7 +400,7 @@ Surpringly, Ryan Bowen had 1 pt defensive skills of -13.475, 2 pt defensive skil
 \section{Conclusions}
 
 Bayesian prior/smoothing
-Coach skill
+Coach skill - can add coach as another variable, and see if they are using the most optimal lineups against their opponent.
 More binary response models
 
 \section{References}
