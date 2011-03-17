@@ -26,6 +26,8 @@ SIGMA_EPS_STOP = 1e-10;
 STOPPING_EPS = 1e-6;
 PRUNING_EPS = STOPPING_EPS * STOPPING_EPS;
 
+assert(0.5.^MAX_ITERS < STOPPING_EPS)
+
 % X = [ones(size(X,1),1) X]; %no need to add an intercept, just take X as passed in to the function
 p = size(X,1);
 n = size(X,2);
@@ -94,7 +96,7 @@ for i=1:MAX_ITERS
 	theta_prev = theta;
 	
 	%=================================
-	%   Perform Newton-Raphson step
+	%   Compute Newton-Raphson step
 	%=================================
 	
 	% grad = grad + w(j) * X(j,:)'*(y(j) - hxj);
@@ -118,7 +120,6 @@ for i=1:MAX_ITERS
 	H = - X_pruned' * bsxfun(@times,X_pruned,H_inside_coeff);
 
 	update_step = - pinv(H) * grad;
-	theta = theta + step_size*update_step;
 	
 	%===========================
 	%   Check for convergence
@@ -127,5 +128,7 @@ for i=1:MAX_ITERS
 	if max(abs(step_size*update_step))/EFFECTIVE_SIGMA < STOPPING_EPS
 		break
 	end
+	
+	theta = theta + step_size*update_step;
 end
 
