@@ -85,9 +85,9 @@ Basketball also brings more key challenges to the field of Bayesian Skill estima
 We model the result of each possession as an independent and identically distributed random variable, \emph{Result}.
 An NBA roster has 12 players, but only five of them are on the court for a given team during any single possession.
 
-To reduce noise, we ignore ``garbage time" possessions. To simplify the model we will only consider possessions in the first half of games, or in the case of games that go to overtime, the entire game. This ensures that we take a lot of the gamesmanship and coaching strategy out of the data - we won't have to deal with starters resting or bench players playing a lot of minutes in a blowout.
+To reduce noise, we ignore ``garbage time'' possessions. To simplify the model we will only consider possessions in the first half of games, or in the case of games that go to overtime, the entire game. This ensures that we take a lot of the gamesmanship and coaching strategy out of the data - we won't have to deal with starters resting or bench players playing a lot of minutes in a blowout.
 
-We begin with a very basic model that follows traditional ``skill ranking" in the sense that each player has an unobserved (or parameterized) skill that has some distribution, and using inference (or parameter estimation) we can determine the value of each player's skill.
+We begin with a very basic model that follows traditional ``skill ranking'' in the sense that each player has an unobserved (or parameterized) skill that has some distribution, and using inference (or parameter estimation) we can determine the value of each player's skill.
 In this network, we decided each player would have a hidden offensive and defensive skill value, shared across possessions:
 \begin{center}
 	\includegraphics[width=0.90\linewidth]{figures/network}
@@ -102,14 +102,14 @@ These skills would contribute deterministically in some way to an ``effective'' 
 
 Note: We are ignoring the rare 4 point plays. 
 
-The \emph{On Court} random variable "multiplexes" between those players that are on the court and those that are not.
+The \emph{On Court} random variable ``multiplexes'' between those players that are on the court and those that are not.
 
 % ==============================================================================
 \subsection{Issues}
 \label{sec:badnetwork}
 These traditional models~\cite{herbrich2007trueskilltm} have difficulty capturing the proper causalities when Results can have multinomial-valued outcomes.
 For example, regardless of the parameterization of the \emph{Results} CPD, both $\prb{ R = 2}$ and $\prb{R= 3}$ would depend on the same skills of the same players.
-The relative distribution of outcomes $\prb{R = 2}$ vs. $\prb{R = 3}$ would be shared across all ``units" (i.e. all combinations of \emph{On Court} assignments).
+The relative distribution of outcomes $\prb{R = 2}$ vs. $\prb{R = 3}$ would be shared across all ``units'' (i.e. all combinations of \emph{On Court} assignments).
 
 In reality, a team that scores $R=3$ half the time and $R=1$ half the time is just as good as a team that scores $R=2$ all the time.
 However, any traditional Win/Lose model will unfairly penalize the likelihood of one of these teams over the other and leads to under-fitting.
@@ -466,11 +466,11 @@ Prediction against test
 
 \section{Analysis}
 
-Metrics:
-epsilon
-test/training vs. dataset size
-$E[Pr{datapoint}]$
-$M_count$
+%Metrics:
+%epsilon
+%test/training vs. dataset size
+%$E[Pr{datapoint}]$
+%$M_count$
 
 
 Looking at our single game data on February 4th, 2007 between Detroit and Cleveland, we can see that Billups, Maxiell, James, Wallace, and Varejao were the top 5 2 point offensive players. There were not a lot of 3 point possessions in the game (only 13), so the more efficient scorers were rewarded with high 2 point offensive skill numbers. Billups shot only 4/9 from the floor but by shooting 9/10 from the FT line, this equated to 4 additional 2 point plays. Maxiell only played 5 minutes but in those few possessions, the team converted on both 2 point and 1 point possessions. The bottom 5 2 point defense that day were Snow, Hunter, Marshall, Gibson, and Webber. When these players were on the court, they allowed their opponents to score more than the expected number of 2 point plays. What is interesting to note here is that Marshall and Gibson have better than average 2 point offensive skills but lower than average 2 point defensive skills. 
@@ -478,18 +478,18 @@ Looking at our single game data on February 4th, 2007 between Detroit and Clevel
 As we trained with more data, including all games in the head to head between Detroit and Cleveland that year, the offensive and defensive skills started to converge closer to the mean. This is due to reducing variance that can occur with one game and few minutes. For example, Maxiell, who only played 5 minutes in the previous game no longer remained in the top 5 of the 2 point offensive skills. The bottom 5 2 point defensive skills were dominated by Cleveland players. We can see that Detroit got the best of Cleveland this year, winning 3 out of 4 games and only losing a close one in OT.
 
 
-``Looking at our training set of the NBA West Southwest Intradivision games, in the 2008-2009 NBA season, Shane Battier was on the Second team NBA All-Defensive Team. However, he had a non-adjusted +/- of -18 in the games he played against the Southwest division, which is reflected in the results of only -0.255, and a below average 1.460 in his defensive skill ranking against 2 pt and 3 pt, respectively. 
+Looking at our training set of the NBA West Southwest Intradivision games, in the 2008-2009 NBA season, Shane Battier was on the Second team NBA All-Defensive Team. However, he had a non-adjusted +/- of -18 in the games he played against the Southwest division, which is reflected in the results of only -0.255, and a below average 1.460 in his defensive skill ranking against 2 pt and 3 pt, respectively. 
 
-Surpringly, Ryan Bowen had 1 pt defensive skills of -932.78, 2 pt defensive skills of -2.16, and 3 pt defensive skills of -18.774. Bowen only participated in one of seven of his team's intradivision games, playing 16 minutes and ending with a non-adjusted +/- of -3. However, when he was on the floor, the opponent had 32 possessions but only R(3) = 2 (6.25\% of possessions) which is lower than the typical 8.48%. The opponent did have R(1) = 3 (9.375% of possessions), which is much higher than the expected 2.9%. However, his teammates on the court had 1 pt defensive skills of +0.383, +0.214, +1.909, +0.659, +5.574, and +0.475, so Bowen appeared to have made a large contribution to keeping the R(1) of their opponent lower. 
+Surpringly, Ryan Bowen had 1 pt defensive skills of -932.78, 2 pt defensive skills of -2.16, and 3 pt defensive skills of -18.774. Bowen only participated in one of seven of his team's intradivision games, playing 16 minutes and ending with a non-adjusted +/- of -3. However, when he was on the floor, the opponent had 32 possessions but only R(3) = 2 (6.25\% of possessions) which is lower than the typical 8.48\%. The opponent did have R(1) = 3 (9.375\% of possessions), which is much higher than the expected 2.9\%. However, his teammates on the court had 1 pt defensive skills of +0.383, +0.214, +1.909, +0.659, +5.574, and +0.475, so Bowen appeared to have made a large contribution to keeping the R(1) of their opponent lower. 
 
-Another player with very interesting results was Matt Carroll. On offense, he posted a 1 pt offensive skill of -13.171, 2 pt offensive skill of 2.414, and 3 pt offensive skill of -19.257. A 2 pt offensive skill of +2.414 puts him second amongst all players in intradivision games in the Southwest division. Like his offensive skill numbers, his defensive skill for 1 pt was -170.3, 2 pt 2.665, and 3 pt -18.11. The disparity in the numbers comes from the fact that Carroll only played in one game for about 5 minutes. While in the game, his opponent never scored 1 point or 3 points on any of their possessions, and hence the "great" defensive skill for those two skills. On the offensive end, Carroll's team also did not score 1 point or 3 points on any of their possessions. They did convert on 4/9 (44.4\%) possessions for 2 points, when the league average is closer to 38\%. Therefore, he has a low offensive skill for 1 point and 3 points, but a good (relative to other players) 2 point offensive skill.
+Another player with very interesting results was Matt Carroll. On offense, he posted a 1 pt offensive skill of -13.171, 2 pt offensive skill of 2.414, and 3 pt offensive skill of -19.257. A 2 pt offensive skill of +2.414 puts him second amongst all players in intradivision games in the Southwest division. Like his offensive skill numbers, his defensive skill for 1 pt was -170.3, 2 pt 2.665, and 3 pt -18.11. The disparity in the numbers comes from the fact that Carroll only played in one game for about 5 minutes. While in the game, his opponent never scored 1 point or 3 points on any of their possessions, and hence the ``great'' defensive skill for those two skills. On the offensive end, Carroll's team also did not score 1 point or 3 points on any of their possessions. They did convert on 4/9 (44.4\%) possessions for 2 points, when the league average is closer to 38\%. Therefore, he has a low offensive skill for 1 point and 3 points, but a good (relative to other players) 2 point offensive skill.
 
 
-\section{Conclusions}
+%\section{Conclusions}
 
-Bayesian prior/smoothing
-Coach skill - can add coach as another variable, and see if they are using the most optimal lineups against their opponent.
-More binary response models
+%Bayesian prior/smoothing
+%Coach skill - can add coach as another variable, and see if they are using the most optimal lineups against their opponent.
+%More binary response models
 
 \section{References}
 %\small{
