@@ -17,8 +17,10 @@ function [theta,i] = MLE_Gaussian_vectorized(X,y,w,SIGMA,theta_init)
 % returns theta as a column vector
 MAX_ITERS = 100;
 SIGMA_EPS_STOP = 1e-10;
-STOPPING_EPS = 1e-6; % For stopping criteria
-PRUNING_EPS = STOPPING_EPS*STOPPING_EPS; % To avoid dividing by zero
+STOPPING_EPS = 1e-10; % For stopping criteria
+PRUNING_EPS = 1e-10; % To avoid dividing by zero
+
+assert(0.5.^MAX_ITERS < STOPPING_EPS)
 
 % X = [ones(size(X,1),1) X]; %no need to add an intercept, just take X as passed in to the function
 p = size(X,1);
@@ -94,7 +96,7 @@ for i=1:MAX_ITERS
 	
 	
 	%=================================
-	%   Perform Newton-Raphson step
+	%   Compute Newton-Raphson step
 	%=================================
 	
 	
@@ -119,7 +121,8 @@ for i=1:MAX_ITERS
 	X_pruned = X(prune_training_points,:);
 	grad = X_pruned' * ((y_pdf_cdf_j - yneg_pdf_negcdf_j) .* w(prune_training_points)); % grad = grad + w(j) * X(j,:)'*(y_pdf_cdf(j) - yneg_pdf_negcdf(j)); 
 	
-	
+
+	% In general, Hessian is the optimal step size
 	H_inside_coeff = w(prune_training_points) .* (y_pdf_cdf_j.*(1 + pdf_cdf_j) + yneg_pdf_negcdf_j.*(1 + pdf_negcdf_j));
 	% H = H - w(j).* (y(j)*(pdf/cdf + pdf^2/cdf^2)         + (1-y(j))*(pdf^2/negcdf^2 + pdf/negcdf)      ) * X(j,:)'*X(j,:);
 	% H = H - w(j).* (  y(j)*(1 + pdf/cdf)*pdf/cdf         + (1-y(j))*(1 + pdf/negcdf)*pdf/negcdf        ) * X(j,:)'*X(j,:);
@@ -130,18 +133,10 @@ for i=1:MAX_ITERS
 	%	So: \sum X(j,:)'*X(j,:) = X' * X
 	%	    \sum X(j,:)'*w(j)*X(j,:) = X' * (w .* X)
 	%	                                     bsxfun
-
 	H = - X_pruned' * bsxfun(@times,X_pruned,H_inside_coeff); % H = H - w(j) * (y_pdf_cdf(j)*(1 + pdf_cdf_j(j)) + yneg_pdf_negcdf(j)*(1 + pdf_negcdf_j(j))) * (X(j,:)'*X(j,:)); 
-	
 	update_step = - pinv(H) * grad;
 	
 	if any(isnan(update_step))
-		keyboard
-	end
-	
-	theta = theta + step_size*update_step;
-	
-	if any(isnan(theta))
 		keyboard
 	end
 	
@@ -152,4 +147,6 @@ for i=1:MAX_ITERS
 	if max(abs(step_size*update_step))/SIGMA < STOPPING_EPS
 		break
 	end
+	
+	theta = theta + step_size*update_step;
 end
