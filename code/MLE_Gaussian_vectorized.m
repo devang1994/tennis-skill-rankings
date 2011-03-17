@@ -17,8 +17,8 @@ function [theta,i] = MLE_Gaussian_vectorized(X,y,w,SIGMA,theta_init)
 % returns theta as a column vector
 MAX_ITERS = 100;
 SIGMA_EPS_STOP = 1e-10;
-STOPPING_EPS = 1e-10; % For stopping criteria
-PRUNING_EPS = 1e-10; % To avoid dividing by zero
+STOPPING_EPS = 1e-6;
+PRUNING_EPS = STOPPING_EPS * STOPPING_EPS;
 
 assert(0.5.^MAX_ITERS < STOPPING_EPS)
 
@@ -30,8 +30,10 @@ theta = theta_init;
 step_size = 1.0;
 theta_prev = nan(size(theta));
 ll_prev = -inf(size(y));
+update_step = zeros(size(theta));
 
 for i=1:MAX_ITERS
+	theta = theta + step_size*update_step;
 	
 	%==============================
 	%   Precompute useful values
@@ -84,10 +86,16 @@ for i=1:MAX_ITERS
 		disp(['Overshoot on iteration ' num2str(i) '!'])
 		disp(ll_prev_total)
 		disp(ll_new_total)
-		ll_prev = -inf(size(y)); % reset this. When you go back through ll_prev will be set to ll_new which should be the same ll_prev you had when you did the overshoot in the first place.
-		theta = theta_prev;
 		step_size = step_size * 0.5;
 		disp(['step size reduced to ' num2str(step_size)]);
+		
+		
+		% reset this. When you go back through ll_prev will be set to ll_new which should be the same ll_prev you had when you did the overshoot in the first place.
+		theta = theta_prev;
+		ll_prev = -inf(size(y)); 
+		update_step = zeros(size(theta));
+		
+		
 		%keyboard
 		continue;
 	end
@@ -147,6 +155,4 @@ for i=1:MAX_ITERS
 	if max(abs(step_size*update_step))/SIGMA < STOPPING_EPS
 		break
 	end
-	
-	theta = theta + step_size*update_step;
 end
