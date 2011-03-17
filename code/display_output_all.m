@@ -1,8 +1,19 @@
 
+SIGMA = sqrt(10),
+
 % PRINT OUTPUT
 M_count = sum(bsxfun(@eq,dataset(:,1),0:3))',
 
-players = struct('M', sum(M_count), 'possessions', sum(dataset(:,2:end))');
+M = sum(M_count);
+logistic_average = (log(M_count(2:4)) - log(M-M_count(2:4)))/10 * (1 / (sqrt(3) * SIGMA/pi));
+gaussian_average = norminv(M_count(2:4)/M,0,SIGMA)/10;
+
+disp('League averages:')
+disp(['  LOGISTIC  ' num2str(logistic_average')])
+disp(['  GAUSSIAN  ' num2str(gaussian_average')])
+
+
+players = struct('M', M, 'possessions', sum(dataset(:,2:end))');
 players.names = player_names;
 
 disp('Table of Contents')
