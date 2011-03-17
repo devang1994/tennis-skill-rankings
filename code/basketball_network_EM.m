@@ -54,7 +54,8 @@ E_D_schedule = logical([
 %We have L-1 thetas because there is one theta for every player.
 %L is the number of columns in the dataset, but one of the columns is R
 Theta = zeros(3, L-1); % With no prior information, initialize to zeros (we used to start at all zeroes on every call to mle_logistic anyway)
-epsilon = (sum(dataset(:,1) == 1) + sum(dataset(:,1) == 3))/M; % Some arbitrarily small number
+% If skills are all even (Pr{Win} == 0.5), this would be epsilon:
+epsilon = (sum(dataset(:,1) == 0)/8 + sum(dataset(:,1) == 1)/8 + sum(dataset(:,1) == 2)/4 + sum(dataset(:,1) == 2)/2)/M/3;
 % If first_step == 'M', these initialization values will determine which local optima we reach.
 % If first_step == 'E', presumably these will both be overwritten during the first E-step.
 
@@ -91,7 +92,7 @@ M,
 %   Random initialization strategies
 %======================================
 if first_step == 'm'
-	epsilon = rand;
+	epsilon = rand / 3; %epsilon can't be greater than 1/3
 	Theta = (rand(size(theta)) - 0.5)*sqrt(12); % mle_logistic and MLE_Gaussian assume unit variance, the width of a unit-variance uniform distribution is sqrt(12)
 	first_step = 'M';
 elseif first_step == 'e'
